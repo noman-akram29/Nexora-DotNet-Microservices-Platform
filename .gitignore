@@ -1,0 +1,28 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+# IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.user
+*.suo
+.idea/
+# Secrets / env
+.env
+.env.*
+!.env.example
+secrets.json
+*.pfx
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+# OS
+.DS_Store
+Thumbs.db

@@ -21,14 +21,14 @@ public class EmailService : IEmailService
     public async Task SendOtpEmailAsync(string toEmail, string otpCode, string otpType)
     {
         var subject = otpType == "REGISTER"
-            ? "🔐 Mã xác thực tài khoản E-Shop"
-            : "🔑 Mã đặt lại mật khẩu E-Shop";
+            ? "🔐 Mã xác thực tài khoản Nexora"
+            : "🔑 Mã đặt lại mật khẩu Nexora";
 
         var body = await BuildEmailHtmlAsync(otpCode, otpType);
 
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(
-            _config["Smtp:FromName"] ?? "E-Shop Support",
+            _config["Smtp:FromName"] ?? "Nexora Support",
             _config["Smtp:FromEmail"]));
         message.To.Add(MailboxAddress.Parse(toEmail));
         message.Subject = subject;
@@ -62,12 +62,12 @@ public class EmailService : IEmailService
         var (title, subtitle, action) = otpType == "REGISTER"
             ? (
                 "Xác thực tài khoản của bạn",
-                "Chào mừng bạn đến với <em>E-Shop</em>! Vui lòng sử dụng mã xác thực dưới đây để hoàn tất quá trình thiết lập tài khoản của bạn.",
+                "Chào mừng bạn đến với <em>Nexora</em>! Vui lòng sử dụng mã xác thực dưới đây để hoàn tất quá trình thiết lập tài khoản của bạn.",
                 "xác thực tài khoản"
               )
             : (
                 "Đặt lại mật khẩu của bạn",
-                "Chúng tôi nhận được yêu cầu <strong>đặt lại mật khẩu</strong> cho tài khoản <em>E-Shop</em> của bạn. Dùng mã dưới đây để tiếp tục.",
+                "Chúng tôi nhận được yêu cầu <strong>đặt lại mật khẩu</strong> cho tài khoản <em>Nexora</em> của bạn. Dùng mã dưới đây để tiếp tục.",
                 "đặt lại mật khẩu"
               );
 

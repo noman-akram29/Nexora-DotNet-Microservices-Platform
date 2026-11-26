@@ -1,6 +1,6 @@
 # 🛒 MicroserviceShop
 
-A **production-ready E-commerce platform** built on a **Microservices Architecture** using **.NET 8**. The system is designed for high scalability, fault isolation, and maintainability — with each business domain running as an independent, deployable service.
+A **production-ready E-commerce platform** built on a **Microservices Architecture** using **.NET 10 (LTS)**. The system is designed for high scalability, fault isolation, and maintainability — with each business domain running as an independent, deployable service.
 
 ---
 
@@ -102,10 +102,10 @@ Services communicate asynchronously via **RabbitMQ** using **MassTransit**. Doma
 ### Backend
 | Category | Technology |
 |---|---|
-| Runtime | .NET 8, C# |
+| Runtime | .NET 10 (LTS), C# |
 | Web Framework | ASP.NET Core Web API |
 | API Gateway | Ocelot |
-| ORM | Entity Framework Core 8 |
+| ORM | Entity Framework Core 10 |
 | Database | PostgreSQL (per-service database) |
 | Message Broker | RabbitMQ + MassTransit 8 |
 | Distributed Cache | Redis (StackExchange.Redis) |
@@ -185,7 +185,7 @@ MicroserviceShop/
 ## ⚙️ Getting Started
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Node.js 20+](https://nodejs.org/) *(for frontend)*
 
@@ -203,6 +203,19 @@ docker-compose up -d
 | RabbitMQ Management UI | `http://localhost:15673` | `guest` / `guest` |
 | Redis | `localhost:6379` | — |
 | MinIO Console | `http://localhost:9001` | `minioadmin` / `minioadmin` |
+
+### 1b. Configure Local Secrets
+
+Secrets are **not** stored in `appsettings.json`. Set them once with .NET user-secrets
+(stored outside the repo):
+
+```bash
+./scripts/set-dev-secrets.sh          # Linux/macOS/Git Bash
+.\scripts\set-dev-secrets.ps1         # Windows PowerShell
+```
+
+For Docker Compose, copy `.env.example` to `.env` and adjust the values.
+`NotificationService` SMTP credentials must be set manually (see script output).
 
 ### 2. Apply Database Migrations
 

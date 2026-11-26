@@ -21,8 +21,8 @@ services:
       - "5600:5672"   # AMQP - gửi/nhận message
       - "15673:15672" # Web UI - http://localhost:15673
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
     networks:
       - microservice_network
     healthcheck:
@@ -39,7 +39,7 @@ services:
     container_name: postgres_folder_shop
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
       - "5555:5432" # expose ra ngoài để dùng DBeaver/pgAdmin
     volumes:
@@ -76,13 +76,13 @@ services:
     image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
     container_name: minio_folder_shop
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     ports:
       - "9000:9000"   # S3 API — backend kết nối vào đây
       - "9001:9001"   # Web Console UI
     volumes:
-      - T:\TryHard_IT_Project\Intern\MicroserviceShop\CommonService\public:/data
+      - minio_data:/data
     command: server /data --console-address ":9001"
     networks:
       - microservice_network
@@ -94,3 +94,4 @@ services:
 
 volumes:
   postgres_data_folder_shop:
+  minio_data:

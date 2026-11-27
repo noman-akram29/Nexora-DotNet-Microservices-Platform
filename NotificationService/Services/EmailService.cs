@@ -21,30 +21,57 @@ public class EmailService : IEmailService
     public async Task SendOtpEmailAsync(string toEmail, string otpCode, string otpType)
     {
         var subject = otpType == "REGISTER"
-            ? "🔐 Mã xác thực tài khoản Nexora"
-            : "🔑 Mã đặt lại mật khẩu Nexora";
+            ? "🔐 Nexora Account Verification Code"
+            : "🔑 Nexora Password Reset Code";
 
         var body = await BuildEmailHtmlAsync(otpCode, otpType);
 
+        var fromEmail = _config["Smtp:FromEmail"];
+
+        if (string.IsNullOrWhiteSpace(fromEmail))
+
+            throw new InvalidOperationException("SMTP sender email is not configured.");
+
+
         var message = new MimeMessage();
+
         message.From.Add(new MailboxAddress(
+
             _config["Smtp:FromName"] ?? "Nexora Support",
-            _config["Smtp:FromEmail"]));
+
+            fromEmail));
         message.To.Add(MailboxAddress.Parse(toEmail));
         message.Subject = subject;
 
         var bodyBuilder = new BodyBuilder { HtmlBody = body };
         message.Body = bodyBuilder.ToMessageBody();
 
-        using var smtp = new SmtpClient();
-        await smtp.ConnectAsync(
-            _config["Smtp:Host"],
-            int.Parse(_config["Smtp:Port"] ?? "587"),
-            SecureSocketOptions.StartTls);
+        var smtpHost = _config["Smtp:Host"];
+        if (string.IsNullOrWhiteSpace(smtpHost))
+            throw new InvalidOperationException("SMTP host is not configured.");
 
-        await smtp.AuthenticateAsync(
-            _config["Smtp:Username"],
-            _config["Smtp:Password"]);
+        if (!int.TryParse(_config["Smtp:Port"] ?? "587", out var smtpPort) ||
+            smtpPort < 1 || smtpPort > 65535)
+            throw new InvalidOperationException("SMTP port is invalid.");
+
+        var securityValue = _config["Smtp:Security"] ?? "StartTls";
+        if (!Enum.TryParse<SecureSocketOptions>(securityValue, true, out var security) ||
+            (security != SecureSocketOptions.None &&
+             security != SecureSocketOptions.StartTls &&
+             security != SecureSocketOptions.SslOnConnect))
+            throw new InvalidOperationException("SMTP security must be None, StartTls, or SslOnConnect.");
+
+        var smtpUsername = _config["Smtp:Username"];
+        var smtpPassword = _config["Smtp:Password"];
+
+        if (string.IsNullOrWhiteSpace(smtpUsername) != string.IsNullOrWhiteSpace(smtpPassword))
+            throw new InvalidOperationException("SMTP username and password must either both be configured or both be empty.");
+
+        using var smtp = new SmtpClient();
+        await smtp.ConnectAsync(smtpHost, smtpPort, security);
+
+        if (!string.IsNullOrWhiteSpace(smtpUsername))
+            await smtp.AuthenticateAsync(smtpUsername, smtpPassword!);
 
         await smtp.SendAsync(message);
         await smtp.DisconnectAsync(true);
@@ -61,14 +88,14 @@ public class EmailService : IEmailService
 
         var (title, subtitle, action) = otpType == "REGISTER"
             ? (
-                "Xác thực tài khoản của bạn",
-                "Chào mừng bạn đến với <em>Nexora</em>! Vui lòng sử dụng mã xác thực dưới đây để hoàn tất quá trình thiết lập tài khoản của bạn.",
-                "xác thực tài khoản"
+                "Verify Your Account",
+                "Welcome to <em>Nexora</em>! Please use the verification code below to complete your account setup.",
+                "verify your account"
               )
             : (
-                "Đặt lại mật khẩu của bạn",
-                "Chúng tôi nhận được yêu cầu <strong>đặt lại mật khẩu</strong> cho tài khoản <em>Nexora</em> của bạn. Dùng mã dưới đây để tiếp tục.",
-                "đặt lại mật khẩu"
+                "Reset Your Password",
+                "We received a request to <strong>reset the password</strong> for your <em>Nexora</em> account. Use the code below to continue.",
+                "reset your password"
               );
 
         var html = await File.ReadAllTextAsync(templatePath);

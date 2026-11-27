@@ -44,16 +44,16 @@ public class AuthServiceImpl : IAuthService
     public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
     {
         var user = await _userRepo.GetByEmailAsync(request.Username)
-            ?? throw new BadRequestException("Email hoặc mật khẩu không đúng.");
+            ?? throw new BadRequestException("Invalid email or password.");
 
         if (!user.IsActive)
-            throw new BadRequestException("Tài khoản đã bị khóa.");
+            throw new BadRequestException("Your account has been locked.");
 
         if (!user.IsEmailVerified)
-            throw new BadRequestException($"Tài khoản chưa được xác thực email. Vui lòng kiểm tra hộp thư và xác thực.|{user.Email}");
+            throw new BadRequestException($"Your email address has not been verified. Please check your inbox and verify your email.|{user.Email}");
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            throw new BadRequestException("Email hoặc mật khẩu không đúng.");
+            throw new BadRequestException("Invalid email or password.");
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken(user);
@@ -74,14 +74,14 @@ public class AuthServiceImpl : IAuthService
     public async Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request)
     {
         if (await _userRepo.EmailExistsAsync(request.Email))
-            throw new BadRequestException($"Email '{request.Email}' đã tồn tại.");
+            throw new BadRequestException($"Email '{request.Email}' is already registered.");
 
         if (await _userRepo.UsernameExistsAsync(request.Username))
-            throw new BadRequestException($"Username '{request.Username}' đã tồn tại.");
+            throw new BadRequestException($"Username '{request.Username}' is already taken.");
 
         // Gán Role mặc định = "USER" cho tài khoản mới
         var defaultRole = await _roleRepo.GetByNameAsync("USER")
-            ?? throw new BadRequestException("Role 'USER' chưa tồn tại trong hệ thống. Vui lòng seed data trước.");
+            ?? throw new BadRequestException("The 'USER' role does not exist. Please seed the required data first.");
 
         var user = new AppUser
         {
@@ -135,7 +135,7 @@ public class AuthServiceImpl : IAuthService
     public async Task<LoginResponseDTO> GetAccountAsync(string email)
     {
         var user = await _userRepo.GetByEmailAsync(email)
-            ?? throw new NotFoundException($"Không tìm thấy user: {email}");
+            ?? throw new NotFoundException($"User not found: {email}");
 
         return BuildLoginResponse(null, user);
     }
@@ -145,17 +145,17 @@ public class AuthServiceImpl : IAuthService
     public async Task<LoginResponseDTO> RefreshTokenAsync(string refreshToken)
     {
         var principal = _tokenService.ValidateRefreshToken(refreshToken)
-            ?? throw new BadRequestException("Refresh token không hợp lệ hoặc đã hết hạn.");
+            ?? throw new BadRequestException("The refresh token is invalid or has expired.");
 
         var email = principal.Claims
             .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value
-            ?? throw new BadRequestException("Refresh token không chứa email.");
+            ?? throw new BadRequestException("The refresh token does not contain an email address.");
 
         var user = await _userRepo.GetByRefreshTokenAsync(refreshToken)
-            ?? throw new BadRequestException("Refresh token không khớp. Vui lòng đăng nhập lại.");
+            ?? throw new BadRequestException("The refresh token does not match. Please sign in again.");
 
         if (user.Email != email)
-            throw new BadRequestException("Refresh token không hợp lệ.");
+            throw new BadRequestException("The refresh token is invalid.");
 
         var newAccessToken = _tokenService.GenerateAccessToken(user);
         var newRefreshToken = _tokenService.GenerateRefreshToken(user);
@@ -195,7 +195,7 @@ public class AuthServiceImpl : IAuthService
     public async Task UpdateEmailAsync(Guid userId, UpdateEmailRequestDTO request)
     {
         var user = await _userRepo.GetByIdAsync(userId)
-            ?? throw new NotFoundException("Tài khoản không tồn tại.");
+            ?? throw new NotFoundException("The account does not exist.");
 
         // Nếu email mới giống email cũ thì bỏ qua
         if (user.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase))
@@ -205,14 +205,14 @@ public class AuthServiceImpl : IAuthService
         if (!string.IsNullOrEmpty(request.CurrentPassword) && !string.IsNullOrEmpty(request.NewPassword))
         {
             if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
-                throw new BadRequestException("Mật khẩu hiện tại không đúng.");
+                throw new BadRequestException("The current password is incorrect.");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         }
 
         // Kiểm tra trung email
         if (await _userRepo.EmailExistsAsync(request.Email))
-            throw new BadRequestException($"Email '{request.Email}' đã được người khác sử dụng.");
+            throw new BadRequestException($"Email '{request.Email}' is already in use by another user.");
 
         user.Email = request.Email;
         user.UpdatedAt = DateTime.UtcNow;
@@ -235,10 +235,10 @@ public class AuthServiceImpl : IAuthService
     public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
     {
         var user = await _userRepo.GetByIdAsync(userId)
-            ?? throw new NotFoundException("Tài khoản không tồn tại.");
+            ?? throw new NotFoundException("The account does not exist.");
 
         if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
-            throw new BadRequestException("Mật khẩu hiện tại không đúng.");
+            throw new BadRequestException("The current password is incorrect.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
@@ -319,17 +319,17 @@ public class AuthServiceImpl : IAuthService
         var cachedOtp = await _cache.GetAsync<string>($"otp:register:{request.Email.ToLowerInvariant()}");
 
         if (string.IsNullOrEmpty(cachedOtp))
-            throw new BadRequestException("Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu gửi lại.");
+            throw new BadRequestException("The OTP has expired or does not exist. Please request a new one.");
 
         if (cachedOtp != request.OtpCode)
-            throw new BadRequestException("Mã OTP không đúng.");
+            throw new BadRequestException("The OTP is incorrect.");
 
         // Tìm user đang pending (IsEmailVerified = false)
         var user = await _userRepo.GetByEmailAsync(request.Email)
-            ?? throw new NotFoundException("Không tìm thấy tài khoản đang chờ xác thực.");
+            ?? throw new NotFoundException("No account awaiting verification was found.");
 
         if (user.IsEmailVerified)
-            throw new BadRequestException("Tài khoản này đã được xác thực trước đó.");
+            throw new BadRequestException("This account has already been verified.");
 
         // Kích hoạt tài khoản
         user.IsEmailVerified = true;
@@ -347,10 +347,10 @@ public class AuthServiceImpl : IAuthService
     public async Task SendOtpResetPasswordAsync(SendOtpRequest request)
     {
         var user = await _userRepo.GetByEmailAsync(request.Email)
-            ?? throw new NotFoundException("Không tìm thấy tài khoản với email này.");
+            ?? throw new NotFoundException("No account was found with this email address.");
 
         if (!user.IsEmailVerified)
-            throw new BadRequestException("Tài khoản chưa được xác thực email.");
+            throw new BadRequestException("The account's email address has not been verified.");
 
         var otp = GenerateOtp();
 
@@ -372,13 +372,13 @@ public class AuthServiceImpl : IAuthService
         var cachedOtp = await _cache.GetAsync<string>($"otp:reset:{request.Email}");
 
         if (string.IsNullOrEmpty(cachedOtp))
-            throw new BadRequestException("Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu gửi lại.");
+            throw new BadRequestException("The OTP has expired or does not exist. Please request a new one.");
 
         if (cachedOtp != request.OtpCode)
-            throw new BadRequestException("Mã OTP không đúng.");
+            throw new BadRequestException("The OTP is incorrect.");
 
         var user = await _userRepo.GetByEmailAsync(request.Email)
-            ?? throw new NotFoundException("Không tìm thấy tài khoản.");
+            ?? throw new NotFoundException("Account not found.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;

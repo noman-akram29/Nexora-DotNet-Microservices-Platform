@@ -35,7 +35,7 @@ public class Product
     public int StockQuantity { get; set; } = 0;
 
     /// <summary>Đơn vị tính: cái, kg, hộp, v.v.</summary>
-    public string Unit { get; set; } = "cái";
+    public string Unit { get; set; } = "piece";
 
     /// <summary>Ngưỡng cảnh báo hàng sắp hết (dưới ngưỡng này → cảnh báo)</summary>
     public int LowStockThreshold { get; set; } = 5;

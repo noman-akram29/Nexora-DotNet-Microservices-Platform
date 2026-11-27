@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
     // POST /api/v1/auth/login
     [HttpPost("login")]
     [AllowAnonymous]
-    [ApiMessage("Đăng nhập thành công")]
+    [ApiMessage("Login successful.")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
     {
         var result = await _authService.LoginAsync(request);
@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
     // POST /api/v1/auth/register
     [HttpPost("register")]
     [AllowAnonymous]
-    [ApiMessage("Đăng ký thành công")]
+    [ApiMessage("Registration successful.")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDTO request)
     {
         var result = await _authService.RegisterAsync(request);
@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
     // GET /api/v1/auth/account
     [HttpGet("account")]
     [Authorize]
-    [ApiMessage("Lấy thông tin tài khoản thành công")]
+    [ApiMessage("Account information retrieved successfully.")]
     public async Task<IActionResult> GetAccount()
     {
         var email = _tokenService.GetCurrentUserEmail();
@@ -61,7 +61,7 @@ public class AuthController : ControllerBase
     // PUT /api/v1/auth/email
     [HttpPut("email")]
     [Authorize]
-    [ApiMessage("Cập nhật thông tin bảo mật thành công")]
+    [ApiMessage("Security information updated successfully.")]
     public async Task<IActionResult> UpdateEmail([FromBody] UpdateEmailRequestDTO request)
     {
         // Lấy ID từ token 
@@ -70,18 +70,18 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         await _authService.UpdateEmailAsync(userId, request);
-        return Ok(new { message = "Đã cập nhật Email/Password thành công." });
+        return Ok(new { message = "Email and password updated successfully." });
     }
 
     // GET /api/v1/auth/refresh
     [HttpGet("refresh")]
     [AllowAnonymous]
-    [ApiMessage("Refresh token thành công")]
+    [ApiMessage("Token refreshed successfully.")]
     public async Task<IActionResult> RefreshToken()
     {
         var refreshToken = Request.Cookies["refresh_token"];
         if (string.IsNullOrEmpty(refreshToken))
-            return BadRequest(new { message = "Không tìm thấy refresh token." });
+            return BadRequest(new { message = "Refresh token not found." });
 
         var result = await _authService.RefreshTokenAsync(refreshToken);
         return Ok(result); // cookie mới đã được Service set
@@ -90,20 +90,20 @@ public class AuthController : ControllerBase
     // POST /api/v1/auth/logout
     [HttpPost("logout")]
     [Authorize]
-    [ApiMessage("Đăng xuất thành công")]
+    [ApiMessage("Logout successful.")]
     public async Task<IActionResult> Logout()
     {
         var email = _tokenService.GetCurrentUserEmail();
         if (!string.IsNullOrEmpty(email))
             await _authService.LogoutAsync(email); // Service tự xóa cookie
 
-        return Ok(new { message = "Đăng xuất thành công." });
+        return Ok(new { message = "Logout successful." });
     }
 
     // PATCH /api/v1/auth/change-password
     [HttpPatch("change-password")]
     [Authorize]
-    [ApiMessage("Đổi mật khẩu thành công")]
+    [ApiMessage("Password changed successfully.")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -111,7 +111,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         await _authService.ChangePasswordAsync(userId, request);
-        return Ok(new { message = "Đổi mật khẩu thành công." });
+        return Ok(new { message = "Password changed successfully." });
     }
 
     // ── OTP Endpoints ─────────────────────────────────────────────────────────
@@ -119,43 +119,43 @@ public class AuthController : ControllerBase
     // POST /api/v1/auth/verify-email
     [HttpPost("verify-email")]
     [AllowAnonymous]
-    [ApiMessage("Xác thực email thành công")]
+    [ApiMessage("Email verification successful.")]
     public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
     {
         await _authService.VerifyEmailAsync(request);
-        return Ok(new { message = "Tài khoản đã được xác thực thành công. Bạn có thể đăng nhập ngay bây giờ." });
+        return Ok(new { message = "Your account has been verified successfully. You can now sign in." });
     }
 
     // POST /api/v1/auth/send-otp-reset
     [HttpPost("send-otp-reset")]
     [AllowAnonymous]
-    [ApiMessage("Đã gửi mã OTP đặt lại mật khẩu")]
+    [ApiMessage("Password reset OTP sent successfully.")]
     public async Task<IActionResult> SendOtpReset([FromBody] SendOtpRequest request)
     {
         await _authService.SendOtpResetPasswordAsync(request);
-        return Ok(new { message = $"Mã OTP đặt lại mật khẩu đã được gửi tới {request.Email}." });
+        return Ok(new { message = $"Password reset OTP has been sent to {request.Email}." });
     }
 
     // POST /api/v1/auth/reset-password
     [HttpPost("reset-password")]
     [AllowAnonymous]
-    [ApiMessage("Đặt lại mật khẩu thành công")]
+    [ApiMessage("Password reset successful.")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         await _authService.ResetPasswordAsync(request);
-        return Ok(new { message = "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới." });
+        return Ok(new { message = "Your password has been reset successfully. Please sign in with your new password." });
     }
 
     // POST /api/v1/auth/resend-otp
     [HttpPost("resend-otp")]
     [AllowAnonymous]
-    [ApiMessage("Đã gửi lại mã OTP")]
+    [ApiMessage("OTP resent successfully.")]
     public async Task<IActionResult> ResendOtp([FromBody] SendOtpRequest request, [FromQuery] string otpType = "REGISTER")
     {
         if (otpType != "REGISTER" && otpType != "RESET_PASSWORD")
-            return BadRequest(new { message = "otpType không hợp lệ. Chỉ chấp nhận: REGISTER | RESET_PASSWORD" });
+            return BadRequest(new { message = "Invalid otpType. Accepted values: REGISTER | RESET_PASSWORD." });
 
         await _authService.ResendOtpAsync(request, otpType);
-        return Ok(new { message = $"Mã OTP đã được gửi lại tới {request.Email}." });
+        return Ok(new { message = $"OTP has been resent to {request.Email}." });
     }
 }

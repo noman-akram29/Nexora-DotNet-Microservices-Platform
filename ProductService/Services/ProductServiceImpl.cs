@@ -61,7 +61,7 @@ public class ProductServiceImpl : IProductService
     {
         var spec = new ProductByIdSpec(id, includeDeleted: true);
         var product = await _productRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+            ?? throw new NotFoundException($"Product not found with ID: {id}");
 
         return MapToResponse(product);
     }
@@ -71,7 +71,7 @@ public class ProductServiceImpl : IProductService
         // Kiểm tra danh mục tồn tại
         var categorySpec = new CategoryByIdSpec(request.CategoryId, includeDeleted: true);
         var category = await _categoryRepo.GetEntityWithSpec(categorySpec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {request.CategoryId}");
+            ?? throw new NotFoundException($"Category not found with ID: {request.CategoryId}");
 
         // Xử lý SKU — tự động tạo nếu không nhập
         var sku = string.IsNullOrWhiteSpace(request.SKU)
@@ -80,7 +80,7 @@ public class ProductServiceImpl : IProductService
 
         // Kiểm tra SKU trùng
         if (await _productRepo.SkuExistsAsync(sku))
-            throw new BadRequestException($"Mã SKU '{sku}' đã tồn tại trong hệ thống.");
+            throw new BadRequestException($"SKU '{sku}' already exists.");
 
         // Xác định trạng thái ban đầu
         var initialStatus = request.StockQuantity <= 0
@@ -122,18 +122,18 @@ public class ProductServiceImpl : IProductService
     {
         var spec = new ProductByIdSpec(id, includeDeleted: true);
         var product = await _productRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+            ?? throw new NotFoundException($"Product not found with ID: {id}");
 
         // Kiểm tra danh mục tồn tại
         var categorySpec = new CategoryByIdSpec(request.CategoryId, includeDeleted: true);
         var category = await _categoryRepo.GetEntityWithSpec(categorySpec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {request.CategoryId}");
+            ?? throw new NotFoundException($"Category not found with ID: {request.CategoryId}");
 
         // Kiểm tra SKU trùng với sản phẩm khác
         var newSku = request.SKU.Trim().ToUpper();
         if (!string.Equals(product.SKU, newSku, StringComparison.OrdinalIgnoreCase) &&
             await _productRepo.SkuExistsAsync(newSku, excludeId: id))
-            throw new BadRequestException($"Mã SKU '{newSku}' đã được dùng bởi sản phẩm khác.");
+            throw new BadRequestException($"SKU '{newSku}' is already used by another product.");
 
         product.Name = request.Name;
         product.SKU = newSku;
@@ -172,7 +172,7 @@ public class ProductServiceImpl : IProductService
     {
         var spec = new ProductByIdSpec(id, includeDeleted: true);
         var product = await _productRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+            ?? throw new NotFoundException($"Product not found with ID: {id}");
 
         // Soft delete — không xóa vật lý (theo Impl.md: giữ lịch sử bán hàng)
         product.IsDeleted = true;
@@ -186,13 +186,13 @@ public class ProductServiceImpl : IProductService
     {
         var spec = new ProductByIdSpec(id, includeDeleted: true);
         var product = await _productRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+            ?? throw new NotFoundException($"Product not found with ID: {id}");
 
         // Không cho phép restore nếu danh mục cha vẫn đang bị khóa
         if (product.Category is { IsDeleted: true })
             throw new BadRequestException(
-                $"Không thể khôi phục sản phẩm khi danh mục \"{product.Category.Name}\" đang bị khóa. " +
-                "Hãy khôi phục danh mục trước.");
+                $"Cannot restore the product because its category \"{product.Category.Name}\" is locked. " +
+                "Restore the category first.");
 
         product.IsDeleted = false;
         product.UpdatedAt = DateTime.UtcNow;
@@ -205,14 +205,14 @@ public class ProductServiceImpl : IProductService
     {
         var spec = new ProductByIdSpec(id, includeDeleted: true);
         var product = await _productRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+            ?? throw new NotFoundException($"Product not found with ID: {id}");
 
         if (product.Status == newStatus)
-            throw new BadRequestException($"Sản phẩm đã ở trạng thái '{newStatus}'.");
+            throw new BadRequestException($"The product is already in the '{newStatus}' status.");
 
         // Không cho phép chuyển sang Active nếu đang hết hàng
         if (newStatus == ProductStatus.Active && product.StockQuantity <= 0)
-            throw new BadRequestException("Không thể kích hoạt sản phẩm khi tồn kho = 0.");
+            throw new BadRequestException("The product cannot be activated because its stock quantity is zero.");
 
         product.Status = newStatus;
         product.UpdatedAt = DateTime.UtcNow;

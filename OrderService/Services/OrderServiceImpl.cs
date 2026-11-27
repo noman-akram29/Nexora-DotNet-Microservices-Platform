@@ -76,7 +76,7 @@ public class OrderServiceImpl : IOrderService
         var order = await _orderRepo.GetEntityWithSpec(spec);
 
         if (order == null)
-            throw new CommonService.Exceptions.NotFoundException($"Không tìm thấy đơn hàng với mã ID: {id}");
+            throw new CommonService.Exceptions.NotFoundException($"Order not found with ID: {id}");
 
         return MapToResponse(order);
     }
@@ -152,7 +152,7 @@ public class OrderServiceImpl : IOrderService
         var order = await _orderRepo.GetEntityWithSpec(spec);
 
         if (order == null)
-            throw new CommonService.Exceptions.NotFoundException($"Không thể cập nhật: Không tìm thấy đơn hàng mã {orderId}");
+            throw new CommonService.Exceptions.NotFoundException($"Cannot update order: order with ID {orderId} was not found.");
 
         var oldStatus = order.Status;
         order.Status = newStatus;

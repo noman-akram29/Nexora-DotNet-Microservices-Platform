@@ -64,8 +64,8 @@ public static class WebAppExtensions
                 context.Response.ContentType = "application/json";
 
                 var message = string.IsNullOrWhiteSpace(serviceName)
-                    ? "Không tìm thấy API endpoint yêu cầu."
-                    : $"Không tìm thấy API endpoint yêu cầu trong {serviceName}.";
+                    ? "The requested API endpoint was not found."
+                    : $"The requested API endpoint was not found in {serviceName}.";
 
                 var response = new ApiResponse<object>
                 {

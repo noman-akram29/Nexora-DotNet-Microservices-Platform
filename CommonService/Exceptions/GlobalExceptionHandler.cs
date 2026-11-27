@@ -62,7 +62,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 // Ẩn chi tiết lỗi trong Production để bảo mật
                 response.Message = _env.IsDevelopment()
                     ? exception.Message
-                    : "Lỗi hệ thống nội bộ. Vui lòng thử lại sau.";
+                    : "An internal server error occurred. Please try again later.";
                 break;
         }
 

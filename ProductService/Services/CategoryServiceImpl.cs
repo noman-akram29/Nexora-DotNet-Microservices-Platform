@@ -75,7 +75,7 @@ public class CategoryServiceImpl : ICategoryService
     {
         var spec = new CategoryByIdSpec(id);
         var category = await _categoryRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {id}");
+            ?? throw new NotFoundException($"Category not found with ID: {id}");
 
         return MapToResponse(category);
     }
@@ -84,7 +84,7 @@ public class CategoryServiceImpl : ICategoryService
     {
         // Kiểm tra tên danh mục trùng
         if (await _categoryRepo.NameExistsAsync(request.Name))
-            throw new BadRequestException($"Loại hàng hóa '{request.Name}' đã tồn tại trong hệ thống.");
+            throw new BadRequestException($"Category '{request.Name}' already exists.");
 
         var category = new Category
         {
@@ -107,12 +107,12 @@ public class CategoryServiceImpl : ICategoryService
     {
         var spec = new CategoryByIdSpec(id);
         var category = await _categoryRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {id}");
+            ?? throw new NotFoundException($"Category not found with ID: {id}");
 
         // Kiểm tra tên trùng với danh mục khác
         if (!string.Equals(category.Name, request.Name, StringComparison.OrdinalIgnoreCase) &&
             await _categoryRepo.NameExistsAsync(request.Name, excludeId: id))
-            throw new BadRequestException($"Loại hàng hóa '{request.Name}' đã được sử dụng.");
+            throw new BadRequestException($"Category '{request.Name}' is already in use.");
 
         category.Name = request.Name.Trim();
         category.Description = request.Description;
@@ -131,7 +131,7 @@ public class CategoryServiceImpl : ICategoryService
     {
         var spec = new CategoryByIdSpec(id);
         var category = await _categoryRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {id}");
+            ?? throw new NotFoundException($"Category not found with ID: {id}");
 
         var now = DateTime.UtcNow;
 
@@ -158,7 +158,7 @@ public class CategoryServiceImpl : ICategoryService
         // Phải dùng includeDeleted=true để tìm được cả entity đã xóa
         var spec = new CategoryByIdSpec(id, includeDeleted: true);
         var category = await _categoryRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy loại hàng hóa với ID: {id}");
+            ?? throw new NotFoundException($"Category not found with ID: {id}");
 
         category.IsDeleted = false;
         category.UpdatedAt = DateTime.UtcNow;

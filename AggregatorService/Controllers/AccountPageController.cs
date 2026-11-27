@@ -21,7 +21,7 @@ public class AccountPageController : ControllerBase
     }
 
     [HttpGet]
-    [ApiMessage("Lấy trang quản lý tài khoản thành công")]
+    [ApiMessage("Account management page retrieved successfully.")]
     public async Task<ActionResult<ApiResponse<object>>> GetAccountPage([FromQuery] AccountPageRequest request)
     {
         // Trích xuất Token từ Authorization header của request hiện tại để forward xuống AuthService

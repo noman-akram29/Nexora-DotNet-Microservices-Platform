@@ -25,7 +25,7 @@ public class ReportController : ControllerBase
     /// <summary>Dashboard KPI — doanh thu hôm nay, tháng này, top bán chạy, hàng sắp hết</summary>
     [HttpGet("dashboard")]
     [RequiresPermission("GET", "/api/v1/reports/dashboard")]
-    [ApiMessage("Lấy tổng quan dashboard thành công")]
+    [ApiMessage("Dashboard overview retrieved successfully.")]
     public async Task<IActionResult> GetDashboard()
     {
         var result = await _reportService.GetDashboardSummaryAsync();
@@ -35,7 +35,7 @@ public class ReportController : ControllerBase
     /// <summary>Danh sách báo cáo doanh thu theo kỳ (Daily / Monthly / Yearly)</summary>
     [HttpGet("revenue")]
     [RequiresPermission("GET", "/api/v1/reports/revenue")]
-    [ApiMessage("Lấy báo cáo doanh thu thành công")]
+    [ApiMessage("Revenue report retrieved successfully.")]
     public async Task<IActionResult> GetRevenue([FromQuery] RevenueReportFilterRequest filter)
     {
         var result = await _reportService.GetPagedRevenueAsync(filter);
@@ -45,7 +45,7 @@ public class ReportController : ControllerBase
     /// <summary>Danh sách snapshot tồn kho sản phẩm</summary>
     [HttpGet("stock-snapshots")]
     [RequiresPermission("GET", "/api/v1/reports/stock-snapshots")]
-    [ApiMessage("Lấy snapshot tồn kho thành công")]
+    [ApiMessage("Inventory snapshot retrieved successfully.")]
     public async Task<IActionResult> GetStockSnapshots([FromQuery] StockSnapshotFilterRequest filter)
     {
         var result = await _reportService.GetPagedStockSnapshotsAsync(filter);
@@ -55,7 +55,7 @@ public class ReportController : ControllerBase
     /// <summary>Hàng sắp hết kho (shortcut filter LowStockOnly=true)</summary>
     [HttpGet("stock-snapshots/low-stock")]
     [RequiresPermission("GET", "/api/v1/reports/stock-snapshots/low-stock")]
-    [ApiMessage("Lấy danh sách hàng sắp hết thành công")]
+    [ApiMessage("Low-stock products retrieved successfully.")]
     public async Task<IActionResult> GetLowStock([FromQuery] int pageSize = 20)
     {
         var result = await _reportService.GetPagedStockSnapshotsAsync(
@@ -66,7 +66,7 @@ public class ReportController : ControllerBase
     /// <summary>Top sản phẩm bán chạy nhất 30 ngày (shortcut sort SoldLast30Days DESC)</summary>
     [HttpGet("stock-snapshots/top-selling")]
     [RequiresPermission("GET", "/api/v1/reports/stock-snapshots/top-selling")]
-    [ApiMessage("Lấy top sản phẩm bán chạy thành công")]
+    [ApiMessage("Top-selling products retrieved successfully.")]
     public async Task<IActionResult> GetTopSelling([FromQuery] int pageSize = 10)
     {
         var result = await _reportService.GetPagedStockSnapshotsAsync(

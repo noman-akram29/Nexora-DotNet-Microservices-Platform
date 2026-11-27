@@ -5,16 +5,16 @@ namespace AuthService.Models.Request;
 /// <summary>Admin tạo tài khoản mới thủ công.</summary>
 public class CreateUserRequest
 {
-    [Required(ErrorMessage = "Username không được để trống")]
+    [Required(ErrorMessage = "Username is required.")]
     [MaxLength(100)]
     public string Username { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Email không được để trống")]
-    [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Email is invalid.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Mật khẩu không được để trống")]
-    [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
+    [Required(ErrorMessage = "Password is required.")]
+    [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
     public string Password { get; set; } = string.Empty;
 
     /// <summary>Nếu null → gán Role mặc định 'USER'.</summary>

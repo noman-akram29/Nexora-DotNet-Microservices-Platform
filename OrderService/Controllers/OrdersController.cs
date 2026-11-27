@@ -25,7 +25,7 @@ public class OrdersController : ControllerBase
     // GET: /api/orders?pageNumber=1&pageSize=10&status=Processing&searchTerm=Nguyen
     [HttpGet]
     [RequiresPermission("GET", "/api/v1/orders")]
-    [ApiMessage("Lấy danh sách đơn hàng thành công")]
+    [ApiMessage("Orders retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<OrderResponse>>> GetAllOrders([FromQuery] OrderFilterRequest filter)
     {
         var result = await _orderService.GetPagedOrdersAsync(filter);
@@ -35,7 +35,7 @@ public class OrdersController : ControllerBase
     // GET: /api/orders/{id}
     [HttpGet("{id}")]
     [RequiresPermission("GET", "/api/v1/orders/{id}")]
-    [ApiMessage("Lấy thông tin đơn hàng thành công")]
+    [ApiMessage("Order retrieved successfully.")]
     public async Task<ActionResult<OrderResponse>> GetOrderById(Guid id)
     {
         var order = await _orderService.GetOrderByIdAsync(id);
@@ -45,7 +45,7 @@ public class OrdersController : ControllerBase
     // POST: /api/orders
     [HttpPost]
     [RequiresPermission("POST", "/api/v1/orders")]
-    [ApiMessage("Tạo đơn hàng thành công")]
+    [ApiMessage("Order created successfully.")]
     public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] CreateOrderRequest request)
     {
         // Đọc trực tiếp từ JWT Claims do Middleware tự giải mã
@@ -62,7 +62,7 @@ public class OrdersController : ControllerBase
     // PUT: /api/orders/{id}/status
     [HttpPut("{id}/status")]
     [RequiresPermission("PUT", "/api/v1/orders/{id}/status")]
-    [ApiMessage("Cập nhật trạng thái đơn hàng thành công")]
+    [ApiMessage("Order status updated successfully.")]
     public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] OrderStatus newStatus)
     {
         var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);

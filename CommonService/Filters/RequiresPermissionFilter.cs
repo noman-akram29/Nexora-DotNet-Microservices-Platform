@@ -40,7 +40,7 @@ public class RequiresPermissionFilter : IAsyncAuthorizationFilter
         var user = context.HttpContext.User;
         if (user?.Identity?.IsAuthenticated != true)
         {
-            SetResponse(context, 401, "Unauthorized", "Bạn chưa đăng nhập hoặc token đã hết hạn.");
+            SetResponse(context, 401, "Unauthorized", "You are not authenticated, or your token has expired.");
             return;
         }
 
@@ -50,7 +50,7 @@ public class RequiresPermissionFilter : IAsyncAuthorizationFilter
         
         if (string.IsNullOrEmpty(email))
         {
-            SetResponse(context, 403, "Forbidden", "Không tìm thấy thông tin user trong token.");
+            SetResponse(context, 403, "Forbidden", "User information was not found in the token.");
             return;
         }
 
@@ -60,7 +60,7 @@ public class RequiresPermissionFilter : IAsyncAuthorizationFilter
 
         if (permissions == null || permissions.Count == 0)
         {
-            SetResponse(context, 403, "Forbidden", "Phiên đăng nhập đã hết hạn hoặc không có quyền. Vui lòng đăng nhập lại.");
+            SetResponse(context, 403, "Forbidden", "Your session has expired or you do not have permission. Please sign in again.");
             return;
         }
 
@@ -71,7 +71,7 @@ public class RequiresPermissionFilter : IAsyncAuthorizationFilter
 
         if (!hasPermission)
         {
-            SetResponse(context, 403, "Forbidden", $"Bạn không có quyền truy cập: {permAttr.Method} {permAttr.ApiPath}");
+            SetResponse(context, 403, "Forbidden", $"You do not have permission to access: {permAttr.Method} {permAttr.ApiPath}.");
         }
     }
 

@@ -22,7 +22,7 @@ public class RolesController : ControllerBase
 
     // GET /api/v1/roles?searchTerm=Admin&isActive=true&pageNumber=1&pageSize=10
     [HttpGet]
-    [ApiMessage("Lấy danh sách role thành công")]
+    [ApiMessage("Roles retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<RoleResponse>>> GetAll(
         [FromQuery] RoleFilterRequest filter)
     {
@@ -32,7 +32,7 @@ public class RolesController : ControllerBase
 
     // GET /api/v1/roles/dropdown — chỉ {id, name} cho select/dropdown, không pagination
     [HttpGet("dropdown")]
-    [ApiMessage("Lấy danh sách role (dropdown) thành công")]
+    [ApiMessage("Role dropdown options retrieved successfully.")]
     public async Task<ActionResult<List<RoleDropdownDto>>> GetDropdown()
     {
         var result = await _roleService.GetDropdownAsync();
@@ -41,7 +41,7 @@ public class RolesController : ControllerBase
 
     // GET /api/v1/roles/{id}
     [HttpGet("{id:guid}")]
-    [ApiMessage("Lấy thông tin role thành công")]
+    [ApiMessage("Role details retrieved successfully.")]
     public async Task<ActionResult<RoleResponse>> GetById(Guid id)
     {
         var role = await _roleService.GetRoleByIdAsync(id);
@@ -50,7 +50,7 @@ public class RolesController : ControllerBase
 
     // POST /api/v1/roles
     [HttpPost]
-    [ApiMessage("Tạo role mới thành công")]
+    [ApiMessage("Role created successfully.")]
     public async Task<ActionResult<RoleResponse>> Create([FromBody] CreateRoleRequest request)
     {
         var role = await _roleService.CreateRoleAsync(request);
@@ -59,7 +59,7 @@ public class RolesController : ControllerBase
 
     // PUT /api/v1/roles/{id}
     [HttpPut("{id:guid}")]
-    [ApiMessage("Cập nhật role thành công")]
+    [ApiMessage("Role updated successfully.")]
     public async Task<ActionResult<RoleResponse>> Update(Guid id, [FromBody] UpdateRoleRequest request)
     {
         var role = await _roleService.UpdateRoleAsync(id, request);
@@ -68,7 +68,7 @@ public class RolesController : ControllerBase
 
     // DELETE /api/v1/roles/{id}
     [HttpDelete("{id:guid}")]
-    [ApiMessage("Xóa role thành công")]
+    [ApiMessage("Role deleted successfully.")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _roleService.DeleteRoleAsync(id);

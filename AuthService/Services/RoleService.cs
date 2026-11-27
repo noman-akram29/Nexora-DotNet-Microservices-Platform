@@ -46,7 +46,7 @@ public class RoleService : IRoleService
     {
         var spec = new RoleByIdSpec(id);
         var role = await _roleRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy Role với ID: {id}");
+            ?? throw new NotFoundException($"Role not found with ID: {id}");
 
         return MapToResponse(role);
     }
@@ -57,13 +57,13 @@ public class RoleService : IRoleService
     {
         var existing = await _roleRepo.GetByNameAsync(request.Name);
         if (existing != null)
-            throw new BadRequestException($"Role '{request.Name}' đã tồn tại.");
+            throw new BadRequestException($"Role '{request.Name}' already exists.");
 
         var permissions = new List<Permission>();
         foreach (var pid in request.PermissionIds)
         {
             var p = await _permissionRepo.GetEntityWithSpec(new PermissionByIdSpec(pid))
-                ?? throw new BadRequestException($"Permission ID {pid} không tồn tại.");
+                ?? throw new BadRequestException($"Permission ID {pid} does not exist.");
             permissions.Add(p);
         }
 
@@ -91,11 +91,11 @@ public class RoleService : IRoleService
     {
         // Load with TRACKING so EF can detect collection changes for many-to-many
         var role = await _roleRepo.GetWithPermissionsAsync(id)
-            ?? throw new NotFoundException($"Không tìm thấy Role với ID: {id}");
+            ?? throw new NotFoundException($"Role not found with ID: {id}");
 
         var sameNameRole = await _roleRepo.GetByNameAsync(request.Name);
         if (sameNameRole != null && sameNameRole.Id != id)
-            throw new BadRequestException($"Role '{request.Name}' đã tồn tại.");
+            throw new BadRequestException($"Role '{request.Name}' already exists.");
 
         role.Name = request.Name;
         role.Description = request.Description;
@@ -105,7 +105,7 @@ public class RoleService : IRoleService
         if (request.PermissionIds != null)
         {
             if (!request.PermissionIds.Any())
-                throw new BadRequestException("Phải có ít nhất 1 Permission.");
+                throw new BadRequestException("At least one permission is required.");
 
             var newIds = request.PermissionIds.ToHashSet();
             var currentIds = role.Permissions.Select(p => p.Id).ToHashSet();
@@ -121,7 +121,7 @@ public class RoleService : IRoleService
             {
                 var toAdd = await _permissionRepo.GetPermissionsByIdsAsync(toAddIds);
                 if (toAdd.Count != toAddIds.Count)
-                    throw new BadRequestException("Một hoặc nhiều Permission ID không tồn tại.");
+                    throw new BadRequestException("One or more permission IDs do not exist.");
                 foreach (var p in toAdd)
                     role.Permissions.Add(p);
             }
@@ -146,11 +146,11 @@ public class RoleService : IRoleService
     {
         var spec = new RoleByIdSpec(id);
         var role = await _roleRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy Role với ID: {id}");
+            ?? throw new NotFoundException($"Role not found with ID: {id}");
 
         if (role.Users.Any())
             throw new BadRequestException(
-                $"Không thể xóa Role '{role.Name}' vì có {role.Users.Count} user đang sử dụng.");
+                $"Cannot delete role '{role.Name}' because it is assigned to {role.Users.Count} user(s).");
 
         _roleRepo.Delete(role);
         await _roleRepo.SaveChangesAsync();

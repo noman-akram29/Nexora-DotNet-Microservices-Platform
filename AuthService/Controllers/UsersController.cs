@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
 
     // GET /api/v1/users?searchTerm=john&isActive=true&roleId=...&pageNumber=1&pageSize=10
     [HttpGet]
-    [ApiMessage("Lấy danh sách user thành công")]
+    [ApiMessage("Users retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<UserResponse>>> GetAll(
         [FromQuery] UserFilterRequest filter)
     {
@@ -32,7 +32,7 @@ public class UsersController : ControllerBase
 
     // GET /api/v1/users/{id}
     [HttpGet("{id:guid}")]
-    [ApiMessage("Lấy thông tin user thành công")]
+    [ApiMessage("User details retrieved successfully.")]
     public async Task<ActionResult<UserResponse>> GetById(Guid id)
     {
         var user = await _userService.GetUserByIdAsync(id);
@@ -41,7 +41,7 @@ public class UsersController : ControllerBase
 
     // POST /api/v1/users
     [HttpPost]
-    [ApiMessage("Tạo user mới thành công")]
+    [ApiMessage("User created successfully.")]
     public async Task<ActionResult<UserResponse>> Create([FromBody] CreateUserRequest request)
     {
         var user = await _userService.CreateUserAsync(request);
@@ -50,7 +50,7 @@ public class UsersController : ControllerBase
 
     // PUT /api/v1/users/{id}
     [HttpPut("{id:guid}")]
-    [ApiMessage("Cập nhật user thành công")]
+    [ApiMessage("User updated successfully.")]
     public async Task<ActionResult<UserResponse>> Update(Guid id, [FromBody] UpdateUserRequest request)
     {
         var user = await _userService.UpdateUserAsync(id, request);
@@ -59,7 +59,7 @@ public class UsersController : ControllerBase
 
     // DELETE /api/v1/users/{id}
     [HttpDelete("{id:guid}")]
-    [ApiMessage("Xóa user thành công")]
+    [ApiMessage("User deleted successfully.")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _userService.DeleteUserAsync(id);
@@ -68,7 +68,7 @@ public class UsersController : ControllerBase
 
     // PATCH /api/v1/users/{id}/reset-password
     [HttpPatch("{id:guid}/reset-password")]
-    [ApiMessage("Đặt lại mật khẩu thành công")]
+    [ApiMessage("Password reset successfully.")]
     public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequest request)
     {
         await _userService.ResetPasswordAsync(id, request);

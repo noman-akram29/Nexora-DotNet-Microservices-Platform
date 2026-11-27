@@ -26,8 +26,8 @@ public static class MinioExtensions
 
         var settings = configuration.GetSection("MinioSettings").Get<MinioSettings>()
             ?? throw new InvalidOperationException(
-                "Thiếu section 'MinioSettings' trong appsettings.json. " +
-                "Vui lòng thêm Endpoint, AccessKey, SecretKey, BucketName.");
+                "The 'MinioSettings' section is missing from appsettings.json. " +
+                "Please configure Endpoint, AccessKey, SecretKey, and BucketName.");
 
         // Đăng ký IMinioClient
         services.AddMinio(configureClient => configureClient

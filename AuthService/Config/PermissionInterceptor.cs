@@ -54,7 +54,7 @@ public class PermissionInterceptor : IAsyncAuthorizationFilter
         var email = userPrincipal.FindFirst(ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(email))
         {
-            SetForbiddenResponse(context, "Không tìm thấy thông tin user trong token.");
+            SetForbiddenResponse(context, "User information was not found in the token.");
             return;
         }
 
@@ -63,8 +63,8 @@ public class PermissionInterceptor : IAsyncAuthorizationFilter
 
         if (permissions == null || permissions.Count == 0)
         {
-            _logger.LogWarning("Cache miss cho {Email} — Redis không có permissions hoặc đã hết hạn.", email);
-            SetForbiddenResponse(context, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            _logger.LogWarning("Permission cache miss for {Email} — Redis has no cached permissions or the cache has expired.", email);
+            SetForbiddenResponse(context, "Your session has expired. Please sign in again.");
             return;
         }
 
@@ -75,8 +75,8 @@ public class PermissionInterceptor : IAsyncAuthorizationFilter
 
         if (!hasPermission)
         {
-            _logger.LogWarning("User {Email} bị từ chối: {Method} {Path}", email, method, path);
-            SetForbiddenResponse(context, $"Bạn không có quyền truy cập: {method} {path}");
+            _logger.LogWarning("Access denied for user {Email}: {Method} {Path}", email, method, path);
+            SetForbiddenResponse(context, $"You do not have permission to access: {method} {path}");
         }
     }
 

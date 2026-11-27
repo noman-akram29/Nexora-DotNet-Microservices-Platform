@@ -45,7 +45,7 @@ public class UserService : IUserService
     public async Task<UserResponse> GetUserByIdAsync(Guid id)
     {
         var user = await _userRepo.GetEntityWithSpec(new UserByIdSpec(id))
-            ?? throw new NotFoundException($"Không tìm thấy user với ID: {id}");
+            ?? throw new NotFoundException($"User not found with ID: {id}");
 
         return MapToResponse(user);
     }
@@ -55,16 +55,16 @@ public class UserService : IUserService
     public async Task<UserResponse> CreateUserAsync(CreateUserRequest request)
     {
         if (await _userRepo.EmailExistsAsync(request.Email))
-            throw new BadRequestException($"Email '{request.Email}' đã tồn tại.");
+            throw new BadRequestException($"Email '{request.Email}' already exists.");
 
         if (await _userRepo.UsernameExistsAsync(request.Username))
-            throw new BadRequestException($"Username '{request.Username}' đã tồn tại.");
+            throw new BadRequestException($"Username '{request.Username}' already exists.");
 
         if (request.RoleId.HasValue)
         {
             var roleExists = await _roleRepo.GetEntityWithSpec(new RoleByIdSpec(request.RoleId.Value));
             if (roleExists is null)
-                throw new BadRequestException($"Role ID '{request.RoleId}' không tồn tại.");
+                throw new BadRequestException($"Role ID '{request.RoleId}' does not exist.");
         }
 
         var user = new AppUser
@@ -89,23 +89,23 @@ public class UserService : IUserService
     public async Task<UserResponse> UpdateUserAsync(Guid id, UpdateUserRequest request)
     {
         var user = await _userRepo.GetEntityWithSpec(new UserByIdSpec(id))
-            ?? throw new NotFoundException($"Không tìm thấy user với ID: {id}");
+            ?? throw new NotFoundException($"User not found with ID: {id}");
 
         // Kiểm tra email trùng (ngoại trừ chính user này)
         if (!user.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)
             && await _userRepo.EmailExistsAsync(request.Email))
-            throw new BadRequestException($"Email '{request.Email}' đã được sử dụng.");
+            throw new BadRequestException($"Email '{request.Email}' is already in use.");
 
         // Kiểm tra username trùng (ngoại trừ chính user này)
         if (!user.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase)
             && await _userRepo.UsernameExistsAsync(request.Username))
-            throw new BadRequestException($"Username '{request.Username}' đã được sử dụng.");
+            throw new BadRequestException($"Username '{request.Username}' is already in use.");
 
         if (request.RoleId.HasValue)
         {
             var roleExists = await _roleRepo.GetEntityWithSpec(new RoleByIdSpec(request.RoleId.Value));
             if (roleExists is null)
-                throw new BadRequestException($"Role ID '{request.RoleId}' không tồn tại.");
+                throw new BadRequestException($"Role ID '{request.RoleId}' does not exist.");
         }
 
         user.Username = request.Username;
@@ -125,7 +125,7 @@ public class UserService : IUserService
     public async Task DeleteUserAsync(Guid id)
     {
         var user = await _userRepo.GetEntityWithSpec(new UserByIdSpec(id))
-            ?? throw new NotFoundException($"Không tìm thấy user với ID: {id}");
+            ?? throw new NotFoundException($"User not found with ID: {id}");
 
         _userRepo.Delete(user);
         await _userRepo.SaveChangesAsync();
@@ -136,7 +136,7 @@ public class UserService : IUserService
     public async Task ResetPasswordAsync(Guid id, ResetPasswordRequest request)
     {
         var user = await _userRepo.GetEntityWithSpec(new UserByIdSpec(id))
-            ?? throw new NotFoundException($"Không tìm thấy user với ID: {id}");
+            ?? throw new NotFoundException($"User not found with ID: {id}");
 
         user.PasswordHash = BC.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;

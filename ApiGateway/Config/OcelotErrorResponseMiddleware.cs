@@ -43,11 +43,11 @@ public class OcelotErrorResponseMiddleware
 
             var (errorName, message) = statusCode switch
             {
-                401 => ("Unauthorized", "Bạn chưa đăng nhập hoặc token đã hết hạn."),
-                403 => ("Forbidden", "Bạn không có quyền truy cập tài nguyên này."),
-                404 => ("Not Found", "Không tìm thấy tài nguyên yêu cầu trên Gateway."),
-                500 => ("Internal Server Error", "Lỗi hệ thống Gateway khi xử lý request."),
-                _ => ("Error", "Đã có lỗi xảy ra.")
+                401 => ("Unauthorized", "You are not authenticated, or your token has expired."),
+                403 => ("Forbidden", "You do not have permission to access this resource."),
+                404 => ("Not Found", "The requested resource was not found on the API Gateway."),
+                500 => ("Internal Server Error", "An internal API Gateway error occurred while processing the request."),
+                _ => ("Error", "An error occurred.")
             };
 
             var response = new

@@ -14,7 +14,7 @@ public class CreatePermissionRequest
 
     [Required]
     [RegularExpression("^(GET|POST|PUT|DELETE|PATCH)$",
-        ErrorMessage = "Method phải là GET, POST, PUT, DELETE hoặc PATCH")]
+        ErrorMessage = "Method must be GET, POST, PUT, DELETE, or PATCH.")]
     public string Method { get; set; } = string.Empty;
 
     [Required]

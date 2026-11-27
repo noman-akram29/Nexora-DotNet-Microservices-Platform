@@ -22,7 +22,7 @@ public class PermissionsController : ControllerBase
 
     // GET /api/v1/permissions?searchTerm=order&module=Orders&method=GET
     [HttpGet]
-    [ApiMessage("Lấy danh sách permission thành công")]
+    [ApiMessage("Permissions retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<PermissionResponse>>> GetAll(
         [FromQuery] PermissionFilterRequest filter)
     {
@@ -32,7 +32,7 @@ public class PermissionsController : ControllerBase
 
     // GET /api/v1/permissions/dropdown
     [HttpGet("dropdown")]
-    [ApiMessage("Lấy danh sách dropdown permission thành công")]
+    [ApiMessage("Permission dropdown options retrieved successfully.")]
     public async Task<ActionResult<List<PermissionResponse>>> GetDropdown()
     {
         var result = await _permissionService.GetDropdownAsync();
@@ -41,7 +41,7 @@ public class PermissionsController : ControllerBase
 
     // GET /api/v1/permissions/{id}
     [HttpGet("{id:guid}")]
-    [ApiMessage("Lấy thông tin permission thành công")]
+    [ApiMessage("Permission details retrieved successfully.")]
     public async Task<ActionResult<PermissionResponse>> GetById(Guid id)
     {
         var perm = await _permissionService.GetPermissionByIdAsync(id);
@@ -50,7 +50,7 @@ public class PermissionsController : ControllerBase
 
     // POST /api/v1/permissions
     [HttpPost]
-    [ApiMessage("Tạo permission mới thành công")]
+    [ApiMessage("Permission created successfully.")]
     public async Task<ActionResult<PermissionResponse>> Create([FromBody] CreatePermissionRequest request)
     {
         var perm = await _permissionService.CreatePermissionAsync(request);
@@ -59,7 +59,7 @@ public class PermissionsController : ControllerBase
 
     // PUT /api/v1/permissions/{id}
     [HttpPut("{id:guid}")]
-    [ApiMessage("Cập nhật permission thành công")]
+    [ApiMessage("Permission updated successfully.")]
     public async Task<ActionResult<PermissionResponse>> Update(Guid id, [FromBody] UpdatePermissionRequest request)
     {
         var perm = await _permissionService.UpdatePermissionAsync(id, request);
@@ -68,7 +68,7 @@ public class PermissionsController : ControllerBase
 
     // DELETE /api/v1/permissions/{id}
     [HttpDelete("{id:guid}")]
-    [ApiMessage("Xóa permission thành công")]
+    [ApiMessage("Permission deleted successfully.")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _permissionService.DeletePermissionAsync(id);

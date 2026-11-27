@@ -21,7 +21,7 @@ public class PaymentController : ControllerBase
     /// <summary>Lấy danh sách giao dịch có filter + phân trang</summary>
     [HttpGet]
     [RequiresPermission("GET", "/api/v1/payments")]
-    [ApiMessage("Lấy danh sách giao dịch thành công")]
+    [ApiMessage("Transactions retrieved successfully.")]
     public async Task<IActionResult> GetAll([FromQuery] PaymentFilterRequest filter)
     {
         var result = await _paymentService.GetPagedPaymentsAsync(filter);
@@ -31,7 +31,7 @@ public class PaymentController : ControllerBase
     /// <summary>Lấy chi tiết 1 giao dịch theo ID</summary>
     [HttpGet("{id:guid}")]
     [RequiresPermission("GET", "/api/v1/payments/{id}")]
-    [ApiMessage("Lấy chi tiết giao dịch thành công")]
+    [ApiMessage("Transaction details retrieved successfully.")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _paymentService.GetPaymentByIdAsync(id);
@@ -41,7 +41,7 @@ public class PaymentController : ControllerBase
     /// <summary>Lấy giao dịch mới nhất của 1 đơn hàng</summary>
     [HttpGet("by-order/{orderId:guid}")]
     [RequiresPermission("GET", "/api/v1/payments/by-order/{orderId}")]
-    [ApiMessage("Lấy giao dịch theo đơn hàng thành công")]
+    [ApiMessage("Order transaction retrieved successfully.")]
     public async Task<IActionResult> GetByOrderId(Guid orderId)
     {
         var result = await _paymentService.GetLatestByOrderIdAsync(orderId);
@@ -51,7 +51,7 @@ public class PaymentController : ControllerBase
     /// <summary>Admin xác nhận thanh toán thủ công (COD / BankTransfer)</summary>
     [HttpPut("{id:guid}/confirm")]
     [RequiresPermission("PUT", "/api/v1/payments/{id}/confirm")]
-    [ApiMessage("Xác nhận thanh toán thành công")]
+    [ApiMessage("Payment confirmed successfully.")]
     public async Task<IActionResult> ConfirmManualPayment(Guid id)
     {
         var result = await _paymentService.ConfirmManualPaymentAsync(id);
@@ -61,7 +61,7 @@ public class PaymentController : ControllerBase
     /// <summary>Admin hoàn tiền giao dịch</summary>
     [HttpPost("{id:guid}/refund")]
     [RequiresPermission("POST", "/api/v1/payments/{id}/refund")]
-    [ApiMessage("Hoàn tiền thành công")]
+    [ApiMessage("Refund processed successfully.")]
     public async Task<IActionResult> Refund(Guid id, [FromBody] RefundRequest request)
     {
         var result = await _paymentService.RefundAsync(id, request.RefundAmount, request.Note);

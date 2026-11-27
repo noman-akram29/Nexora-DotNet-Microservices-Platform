@@ -44,7 +44,7 @@ public class PermissionService : IPermissionService
     {
         var spec = new PermissionByIdSpec(id);
         var perm = await _permissionRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy Permission với ID: {id}");
+            ?? throw new NotFoundException($"Permission not found with ID: {id}");
 
         return MapToResponse(perm);
     }
@@ -55,7 +55,7 @@ public class PermissionService : IPermissionService
     {
         var existing = await _permissionRepo.GetByPathAndMethodAsync(request.ApiPath, request.Method);
         if (existing != null)
-            throw new BadRequestException($"Permission '{request.Method} {request.ApiPath}' đã tồn tại.");
+            throw new BadRequestException($"Permission '{request.Method} {request.ApiPath}' already exists.");
 
         var permission = new Permission
         {
@@ -81,11 +81,11 @@ public class PermissionService : IPermissionService
     {
         var spec = new PermissionByIdSpec(id);
         var perm = await _permissionRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy Permission với ID: {id}");
+            ?? throw new NotFoundException($"Permission not found with ID: {id}");
 
         var conflict = await _permissionRepo.GetByPathAndMethodAsync(request.ApiPath, request.Method);
         if (conflict != null && conflict.Id != id)
-            throw new BadRequestException($"Permission '{request.Method} {request.ApiPath}' đã tồn tại.");
+            throw new BadRequestException($"Permission '{request.Method} {request.ApiPath}' already exists.");
 
         perm.Name      = request.Name;
         perm.ApiPath   = request.ApiPath;
@@ -108,7 +108,7 @@ public class PermissionService : IPermissionService
     {
         var spec = new PermissionByIdSpec(id);
         var perm = await _permissionRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy Permission với ID: {id}");
+            ?? throw new NotFoundException($"Permission not found with ID: {id}");
 
         _permissionRepo.Delete(perm);
         await _permissionRepo.SaveChangesAsync();

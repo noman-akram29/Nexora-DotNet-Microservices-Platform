@@ -51,7 +51,7 @@ public class CustomerServiceImpl : ICustomerService
     {
         var spec = new CustomerByIdSpec(id, includeDeleted: true);
         var customer = await _customerRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy khách hàng với ID: {id}");
+            ?? throw new NotFoundException($"Customer not found with ID: {id}");
 
         return MapToResponse(customer);
     }
@@ -60,12 +60,12 @@ public class CustomerServiceImpl : ICustomerService
     {
         // Kiểm tra SĐT trùng
         if (await _customerRepo.PhoneExistsAsync(request.Phone))
-            throw new BadRequestException($"Số điện thoại '{request.Phone}' đã tồn tại trong hệ thống.");
+            throw new BadRequestException($"Phone number '{request.Phone}' already exists.");
 
         // Kiểm tra Email trùng (nếu có nhập)
         if (!string.IsNullOrWhiteSpace(request.Email) &&
             await _customerRepo.EmailExistsAsync(request.Email))
-            throw new BadRequestException($"Email '{request.Email}' đã tồn tại trong hệ thống.");
+            throw new BadRequestException($"Email '{request.Email}' already exists.");
 
         // Commit avatar từ temp/ → customers/ (nếu có)
         var avatarUrl = string.IsNullOrWhiteSpace(request.AvatarUrl)
@@ -94,18 +94,18 @@ public class CustomerServiceImpl : ICustomerService
     {
         var spec = new CustomerByIdSpec(id, includeDeleted: true);
         var customer = await _customerRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy khách hàng với ID: {id}");
+            ?? throw new NotFoundException($"Customer not found with ID: {id}");
 
         // Kiểm tra SĐT trùng với khách hàng khác
         if (customer.Phone != request.Phone &&
             await _customerRepo.PhoneExistsAsync(request.Phone, excludeId: id))
-            throw new BadRequestException($"Số điện thoại '{request.Phone}' đã được dùng bởi khách hàng khác.");
+            throw new BadRequestException($"Phone number '{request.Phone}' is already in use by another customer.");
 
         // Kiểm tra Email trùng
         if (!string.IsNullOrWhiteSpace(request.Email) &&
             !string.Equals(customer.Email, request.Email, StringComparison.OrdinalIgnoreCase) &&
             await _customerRepo.EmailExistsAsync(request.Email, excludeId: id))
-            throw new BadRequestException($"Email '{request.Email}' đã được dùng bởi khách hàng khác.");
+            throw new BadRequestException($"Email '{request.Email}' is already in use by another customer.");
 
         customer.FullName = request.FullName;
         customer.Phone = request.Phone;
@@ -129,7 +129,7 @@ public class CustomerServiceImpl : ICustomerService
     {
         var spec = new CustomerByIdSpec(id, includeDeleted: true);
         var customer = await _customerRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy khách hàng với ID: {id}");
+            ?? throw new NotFoundException($"Customer not found with ID: {id}");
 
         // Soft delete — không xóa vật lý (theo Impl.md)
         customer.IsDeleted = true;
@@ -143,10 +143,10 @@ public class CustomerServiceImpl : ICustomerService
     {
         var spec = new CustomerByIdSpec(id, includeDeleted: true);
         var customer = await _customerRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy khách hàng với ID: {id}");
+            ?? throw new NotFoundException($"Customer not found with ID: {id}");
 
         if (customer.Status == newStatus)
-            throw new BadRequestException($"Khách hàng đã ở trạng thái '{newStatus}'.");
+            throw new BadRequestException($"The customer is already in the '{newStatus}' status.");
 
         customer.Status = newStatus;
         customer.UpdatedAt = DateTime.UtcNow;

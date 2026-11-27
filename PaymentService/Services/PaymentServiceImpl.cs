@@ -51,7 +51,7 @@ public class PaymentServiceImpl : IPaymentService
     {
         var spec        = new PaymentByIdSpec(id);
         var transaction = await _paymentRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy giao dịch với ID: {id}");
+            ?? throw new NotFoundException($"Transaction not found with ID: {id}");
 
         return MapToResponse(transaction);
     }
@@ -66,13 +66,13 @@ public class PaymentServiceImpl : IPaymentService
     {
         var spec        = new PaymentByIdSpec(transactionId);
         var transaction = await _paymentRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy giao dịch với ID: {transactionId}");
+            ?? throw new NotFoundException($"Transaction not found with ID: {transactionId}");
 
         if (transaction.Status != PaymentStatus.Pending)
-            throw new BadRequestException($"Chỉ có thể xác nhận giao dịch ở trạng thái Pending. Trạng thái hiện tại: {transaction.Status}");
+            throw new BadRequestException($"A transaction can only be confirmed when its status is Pending. Current status: {transaction.Status}");
 
         if (transaction.Method != PaymentMethod.COD && transaction.Method != PaymentMethod.BankTransfer)
-            throw new BadRequestException("Chỉ có thể xác nhận thủ công cho COD hoặc BankTransfer.");
+            throw new BadRequestException("Manual confirmation is only supported for COD or BankTransfer.");
 
         transaction.Status    = PaymentStatus.Success;
         transaction.PaidAt    = DateTime.UtcNow;
@@ -100,13 +100,13 @@ public class PaymentServiceImpl : IPaymentService
     {
         var spec        = new PaymentByIdSpec(transactionId);
         var transaction = await _paymentRepo.GetEntityWithSpec(spec)
-            ?? throw new NotFoundException($"Không tìm thấy giao dịch với ID: {transactionId}");
+            ?? throw new NotFoundException($"Transaction not found with ID: {transactionId}");
 
         if (transaction.Status != PaymentStatus.Success)
-            throw new BadRequestException("Chỉ có thể hoàn tiền giao dịch đã thành công.");
+            throw new BadRequestException("Only successful transactions can be refunded.");
 
         if (refundAmount <= 0 || refundAmount > transaction.Amount - transaction.RefundedAmount)
-            throw new BadRequestException($"Số tiền hoàn không hợp lệ. Tối đa có thể hoàn: {transaction.Amount - transaction.RefundedAmount:N0} VND.");
+            throw new BadRequestException($"The refund amount is invalid. Maximum refundable amount: {transaction.Amount - transaction.RefundedAmount:N0} VND.");
 
         transaction.RefundedAmount += refundAmount;
         transaction.RefundedAt      = DateTime.UtcNow;

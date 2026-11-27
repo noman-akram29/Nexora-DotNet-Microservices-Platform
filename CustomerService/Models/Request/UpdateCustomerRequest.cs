@@ -4,16 +4,16 @@ namespace CustomerService.Models.Request;
 
 public class UpdateCustomerRequest
 {
-    [Required(ErrorMessage = "Họ tên không được để trống")]
+    [Required(ErrorMessage = "Full name is required.")]
     [MaxLength(100)]
     public string FullName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Số điện thoại không được để trống")]
-    [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+    [Required(ErrorMessage = "Phone number is required.")]
+    [Phone(ErrorMessage = "Phone number is invalid.")]
     [MaxLength(15)]
     public string Phone { get; set; } = string.Empty;
 
-    [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+    [EmailAddress(ErrorMessage = "Email address is invalid.")]
     [MaxLength(100)]
     public string Email { get; set; } = string.Empty;
 

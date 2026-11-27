@@ -21,7 +21,7 @@ public class CategoriesController : ControllerBase
     // GET: /api/v1/categories?pageNumber=1&pageSize=10...
     [HttpGet]
     [RequiresPermission("GET", "/api/v1/categories")]
-    [ApiMessage("Lấy danh sách loại hàng hóa thành công")]
+    [ApiMessage("Product categories retrieved successfully.")]
     public async Task<ActionResult<CommonService.Common.ResultPaginationDto<CategoryResponse>>> GetAllCategories(
         [FromQuery] CategoryFilterRequest request)
     {
@@ -32,7 +32,7 @@ public class CategoriesController : ControllerBase
     // GET: /api/v1/categories/dropdown
     [HttpGet("dropdown")]
     [RequiresPermission("GET", "/api/v1/categories/dropdown")]
-    [ApiMessage("Lấy danh sách danh mục cho dropdown thành công")]
+    [ApiMessage("Categories for the dropdown retrieved successfully.")]
     public async Task<ActionResult<List<CategoryDropdownResponse>>> GetCategoryDropdown()
     {
         var result = await _categoryService.GetCategoryDropdownAsync();
@@ -42,7 +42,7 @@ public class CategoriesController : ControllerBase
     // GET: /api/v1/categories/{id}
     [HttpGet("{id}")]
     [RequiresPermission("GET", "/api/v1/categories/{id}")]
-    [ApiMessage("Lấy thông tin loại hàng hóa thành công")]
+    [ApiMessage("Product category retrieved successfully.")]
     public async Task<ActionResult<CategoryResponse>> GetCategoryById(Guid id)
     {
         var category = await _categoryService.GetCategoryByIdAsync(id);
@@ -52,7 +52,7 @@ public class CategoriesController : ControllerBase
     // POST: /api/v1/categories
     [HttpPost]
     [RequiresPermission("POST", "/api/v1/categories")]
-    [ApiMessage("Tạo loại hàng hóa thành công")]
+    [ApiMessage("Product category created successfully.")]
     public async Task<ActionResult<CategoryResponse>> CreateCategory(
         [FromBody] CreateCategoryRequest request)
     {
@@ -63,7 +63,7 @@ public class CategoriesController : ControllerBase
     // PUT: /api/v1/categories/{id}
     [HttpPut("{id}")]
     [RequiresPermission("PUT", "/api/v1/categories/{id}")]
-    [ApiMessage("Cập nhật loại hàng hóa thành công")]
+    [ApiMessage("Product category updated successfully.")]
     public async Task<ActionResult<CategoryResponse>> UpdateCategory(
         Guid id, [FromBody] UpdateCategoryRequest request)
     {
@@ -74,7 +74,7 @@ public class CategoriesController : ControllerBase
     // DELETE: /api/v1/categories/{id}  (Soft delete)
     [HttpDelete("{id}")]
     [RequiresPermission("DELETE", "/api/v1/categories/{id}")]
-    [ApiMessage("Xóa loại hàng hóa thành công")]
+    [ApiMessage("Product category deleted successfully.")]
     public async Task<IActionResult> DeleteCategory(Guid id)
     {
         await _categoryService.DeleteCategoryAsync(id);
@@ -84,7 +84,7 @@ public class CategoriesController : ControllerBase
     // PATCH: /api/v1/categories/{id}/restore  — Khôi phục danh mục đã soft delete
     [HttpPatch("{id}/restore")]
     [RequiresPermission("PATCH", "/api/v1/categories/{id}/restore")]
-    [ApiMessage("Khôi phục loại hàng hóa thành công")]
+    [ApiMessage("Product category restored successfully.")]
     public async Task<IActionResult> RestoreCategory(Guid id)
     {
         await _categoryService.RestoreCategoryAsync(id);

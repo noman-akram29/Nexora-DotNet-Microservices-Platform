@@ -36,7 +36,7 @@ public class FormatResponseFilter : IAsyncResultFilter
             if (statusCode >= 400)
             {
                 context.HttpContext.Response.ContentType = "application/json";
-                var errorMessage = ExtractMessage(objectResult.Value) ?? "Có lỗi xảy ra";
+                var errorMessage = ExtractMessage(objectResult.Value) ?? "An error occurred.";
                 objectResult.Value = new ApiResponse<object>
                 {
                     StatusCode = statusCode,
@@ -57,7 +57,7 @@ public class FormatResponseFilter : IAsyncResultFilter
             {
                 StatusCode = statusCode,
                 Error = null,
-                Message = apiMessageAttr?.Message ?? "Thành công",
+                Message = apiMessageAttr?.Message ?? "Success",
                 Data = objectResult.Value
             };
         }

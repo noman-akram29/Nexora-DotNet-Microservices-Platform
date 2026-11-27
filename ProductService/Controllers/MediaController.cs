@@ -28,16 +28,16 @@ public class MediaController : ControllerBase
     // Body: form-data, key = "file"
     [HttpPost("upload")]
     [RequiresPermission("POST", "/api/v1/media/upload")]
-    [ApiMessage("Upload ảnh thành công")]
+    [ApiMessage("Image uploaded successfully.")]
     public async Task<IActionResult> Upload(IFormFile file)
     {
         if (file == null || file.Length == 0)
-            return BadRequest("File không được để trống.");
+            return BadRequest("File cannot be empty.");
 
         // Kiểm tra định dạng file được phép
         var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
         if (!allowedTypes.Contains(file.ContentType.ToLower()))
-            return BadRequest("Chỉ chấp nhận file ảnh (jpg, png, webp, gif).");
+            return BadRequest("Only image files (jpg, png, webp, gif) are accepted.");
 
         // Upload vào temp/ — sẽ tự bị xóa sau 24h nếu không commit
         var tempUrl = await _mediaService.UploadFileAsync(file);
@@ -48,20 +48,20 @@ public class MediaController : ControllerBase
     // Body: form-data, key = "files" (nhiều file)
     [HttpPost("upload-multiple")]
     [RequiresPermission("POST", "/api/v1/media/upload-multiple")]
-    [ApiMessage("Upload nhiều ảnh thành công")]
+    [ApiMessage("Images uploaded successfully.")]
     public async Task<IActionResult> UploadMultiple(IList<IFormFile> files)
     {
         if (files == null || files.Count == 0)
-            return BadRequest("Danh sách file không được để trống.");
+            return BadRequest("The file list cannot be empty.");
 
         if (files.Count > 10)
-            return BadRequest("Chỉ được upload tối đa 10 file cùng lúc.");
+            return BadRequest("You can upload a maximum of 10 files at a time.");
 
         var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
         foreach (var f in files)
         {
             if (!allowedTypes.Contains(f.ContentType.ToLower()))
-                return BadRequest($"File '{f.FileName}' không đúng định dạng (chỉ chấp nhận jpg, png, webp, gif).");
+                return BadRequest($"File '{f.FileName}' has an invalid format. Only jpg, png, webp, and gif files are accepted.");
         }
 
         var tempUrls = await _mediaService.UploadMultipleAsync(files);

@@ -28,10 +28,10 @@ public class ProductRepository : GenericRepository<ProductDbContext, Product>, I
     public async Task DecreaseStockAsync(Guid productId, int quantity)
     {
         var product = await _context.Products.FindAsync(productId)
-            ?? throw new InvalidOperationException($"Không tìm thấy sản phẩm ID: {productId}");
+            ?? throw new InvalidOperationException($"Product not found with ID: {productId}");
 
         if (product.StockQuantity < quantity)
-            throw new InvalidOperationException($"Sản phẩm '{product.Name}' không đủ tồn kho. Hiện còn: {product.StockQuantity}, cần: {quantity}");
+            throw new InvalidOperationException($"Insufficient stock for product '{product.Name}'. Available: {product.StockQuantity}, required: {quantity}.");
 
         product.StockQuantity -= quantity;
         product.UpdatedAt = DateTime.UtcNow;
@@ -46,7 +46,7 @@ public class ProductRepository : GenericRepository<ProductDbContext, Product>, I
     public async Task IncreaseStockAsync(Guid productId, int quantity)
     {
         var product = await _context.Products.FindAsync(productId)
-            ?? throw new InvalidOperationException($"Không tìm thấy sản phẩm ID: {productId}");
+            ?? throw new InvalidOperationException($"Product not found with ID: {productId}");
 
         product.StockQuantity += quantity;
         product.UpdatedAt = DateTime.UtcNow;

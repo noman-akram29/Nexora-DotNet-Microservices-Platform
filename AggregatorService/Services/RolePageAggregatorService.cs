@@ -60,13 +60,13 @@ public class RolePageAggregatorService : IRolePageAggregatorService
             if (!roleResponse.IsSuccessStatusCode)
             {
                 var err = await roleResponse.Content.ReadAsStringAsync();
-                return ((int)roleResponse.StatusCode, null, err, "Lỗi khi tải danh sách chức vụ");
+                return ((int)roleResponse.StatusCode, null, err, "Failed to retrieve the role list.");
             }
 
             if (!permResponse.IsSuccessStatusCode)
             {
                 var err = await permResponse.Content.ReadAsStringAsync();
-                return ((int)permResponse.StatusCode, null, err, "Lỗi khi tải danh sách quyền hạn");
+                return ((int)permResponse.StatusCode, null, err, "Failed to retrieve the permission list.");
             }
 
             var roleJson = await roleResponse.Content.ReadAsStringAsync();
@@ -90,12 +90,12 @@ public class RolePageAggregatorService : IRolePageAggregatorService
                 permissions = permData
             };
 
-            return (200, result, null, "Tải dữ liệu trang quản lý chức vụ thành công");
+            return (200, result, null, "Role management page data retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi khi aggregate Roles Page");
-            return (500, null, ex.Message, "Lỗi hệ thống khi tải dữ liệu");
+            _logger.LogError(ex, "Failed to aggregate role page data.");
+            return (500, null, ex.Message, "A system error occurred while retrieving data.");
         }
     }
 }

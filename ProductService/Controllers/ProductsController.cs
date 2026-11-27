@@ -24,7 +24,7 @@ public class ProductsController : ControllerBase
     // GET: /api/v1/products?searchTerm=áo&categoryId=...&status=0&pageNumber=1&pageSize=10
     [HttpGet]
     [AllowAnonymous]
-    [ApiMessage("Lấy danh sách hàng hóa thành công")]
+    [ApiMessage("Products retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<ProductResponse>>> GetAllProducts(
         [FromQuery] ProductFilterRequest filter)
     {
@@ -35,7 +35,7 @@ public class ProductsController : ControllerBase
     // GET: /api/v1/products/{id}
     [HttpGet("{id}")]
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [ApiMessage("Lấy thông tin hàng hóa thành công")]
+    [ApiMessage("Product retrieved successfully.")]
     public async Task<ActionResult<ProductResponse>> GetProductById(Guid id)
     {
         var product = await _productService.GetProductByIdAsync(id);
@@ -45,7 +45,7 @@ public class ProductsController : ControllerBase
     // POST: /api/v1/products
     [HttpPost]
     [RequiresPermission("POST", "/api/v1/products")]
-    [ApiMessage("Thêm mới hàng hóa thành công")]
+    [ApiMessage("Product created successfully.")]
     public async Task<ActionResult<ProductResponse>> CreateProduct(
         [FromBody] CreateProductRequest request)
     {
@@ -56,7 +56,7 @@ public class ProductsController : ControllerBase
     // PUT: /api/v1/products/{id}
     [HttpPut("{id}")]
     [RequiresPermission("PUT", "/api/v1/products/{id}")]
-    [ApiMessage("Cập nhật hàng hóa thành công")]
+    [ApiMessage("Product updated successfully.")]
     public async Task<ActionResult<ProductResponse>> UpdateProduct(
         Guid id, [FromBody] UpdateProductRequest request)
     {
@@ -67,7 +67,7 @@ public class ProductsController : ControllerBase
     // DELETE: /api/v1/products/{id}  (Soft delete)
     [HttpDelete("{id}")]
     [RequiresPermission("DELETE", "/api/v1/products/{id}")]
-    [ApiMessage("Xóa hàng hóa thành công")]
+    [ApiMessage("Product deleted successfully.")]
     public async Task<IActionResult> DeleteProduct(Guid id)
     {
         await _productService.DeleteProductAsync(id);
@@ -78,7 +78,7 @@ public class ProductsController : ControllerBase
     // Dùng để Khóa (Ngừng bán) hoặc mở khóa sản phẩm (Impl.md)
     [HttpPatch("{id}/status")]
     [RequiresPermission("PATCH", "/api/v1/products/{id}/status")]
-    [ApiMessage("Cập nhật trạng thái hàng hóa thành công")]
+    [ApiMessage("Product status updated successfully.")]
     public async Task<IActionResult> ToggleProductStatus(
         Guid id, [FromBody] ProductStatus newStatus)
     {
@@ -89,7 +89,7 @@ public class ProductsController : ControllerBase
     // PATCH: /api/v1/products/{id}/restore  — Khôi phục sản phẩm đã soft delete
     [HttpPatch("{id}/restore")]
     [RequiresPermission("PATCH", "/api/v1/products/{id}/restore")]
-    [ApiMessage("Khôi phục hàng hóa thành công")]
+    [ApiMessage("Product restored successfully.")]
     public async Task<IActionResult> RestoreProduct(Guid id)
     {
         await _productService.RestoreProductAsync(id);

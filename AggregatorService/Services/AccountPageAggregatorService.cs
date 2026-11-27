@@ -61,13 +61,13 @@ public class AccountPageAggregatorService : IAccountPageAggregatorService
             if (!userResponse.IsSuccessStatusCode)
             {
                 var err = await userResponse.Content.ReadAsStringAsync();
-                return ((int)userResponse.StatusCode, null, err, "Lỗi khi tải danh sách tài khoản");
+                return ((int)userResponse.StatusCode, null, err, "Failed to retrieve the account list.");
             }
 
             if (!roleResponse.IsSuccessStatusCode)
             {
                 var err = await roleResponse.Content.ReadAsStringAsync();
-                return ((int)roleResponse.StatusCode, null, err, "Lỗi khi tải danh sách chức vụ");
+                return ((int)roleResponse.StatusCode, null, err, "Failed to retrieve the role list.");
             }
 
             var userJson = await userResponse.Content.ReadAsStringAsync();
@@ -91,12 +91,12 @@ public class AccountPageAggregatorService : IAccountPageAggregatorService
                 roles = roleData
             };
 
-            return (200, result, null, "Tải dữ liệu trang quản lý tài khoản thành công");
+            return (200, result, null, "Account management page data retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi khi aggregate Accounts Page");
-            return (500, null, ex.Message, "Lỗi hệ thống khi tải dữ liệu");
+            _logger.LogError(ex, "Failed to aggregate account page data.");
+            return (500, null, ex.Message, "A system error occurred while retrieving data.");
         }
     }
 }

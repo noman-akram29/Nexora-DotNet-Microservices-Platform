@@ -54,13 +54,13 @@ public class ProfileAggregatorService : IProfileAggregatorService
             if (!authResponse.IsSuccessStatusCode)
             {
                 var errorContent = await authResponse.Content.ReadAsStringAsync();
-                return (false, (int)authResponse.StatusCode, null, errorContent, "Cập nhật Email/Password thất bại");
+                return (false, (int)authResponse.StatusCode, null, errorContent, "Failed to update email or password.");
             }
 
             if (!customerResponse.IsSuccessStatusCode)
             {
                 var errorContent = await customerResponse.Content.ReadAsStringAsync();
-                return (false, (int)customerResponse.StatusCode, null, errorContent, "Cập nhật thông tin khách hàng thất bại");
+                return (false, (int)customerResponse.StatusCode, null, errorContent, "Failed to update customer information.");
             }
 
             var rawCustomerJson = await customerResponse.Content.ReadAsStringAsync();
@@ -69,12 +69,12 @@ public class ProfileAggregatorService : IProfileAggregatorService
             var customerDataJson = root.TryGetProperty("data", out var dataProp) ? dataProp.GetRawText() : "{}";
             var customerData = JsonSerializer.Deserialize<object>(customerDataJson);
 
-            return (true, (int)customerResponse.StatusCode, customerData, null, "Cập nhật Profile thành công");
+            return (true, (int)customerResponse.StatusCode, customerData, null, "Profile updated successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi khi cập nhật profile qua BFF.");
-            return (false, 500, null, ex.Message, "Lỗi hệ thống khi cập nhật profile.");
+            _logger.LogError(ex, "An error occurred while updating the profile through the BFF.");
+            return (false, 500, null, ex.Message, "A system error occurred while updating the profile.");
         }
     }
 }

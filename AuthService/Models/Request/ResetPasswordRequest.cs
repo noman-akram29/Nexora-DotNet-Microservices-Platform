@@ -4,15 +4,15 @@ namespace AuthService.Models.Request;
 
 public class ResetPasswordRequest
 {
-    [Required(ErrorMessage = "Email không được để trống")]
-    [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Email is invalid.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Mã OTP không được để trống")]
-    [StringLength(6, MinimumLength = 6, ErrorMessage = "Mã OTP phải có đúng 6 ký tự")]
+    [Required(ErrorMessage = "OTP code is required.")]
+    [StringLength(6, MinimumLength = 6, ErrorMessage = "OTP code must be exactly 6 characters long.")]
     public string OtpCode { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
-    [MinLength(6, ErrorMessage = "Mật khẩu mới phải có ít nhất 6 ký tự")]
+    [Required(ErrorMessage = "New password is required.")]
+    [MinLength(6, ErrorMessage = "New password must be at least 6 characters long.")]
     public string NewPassword { get; set; } = string.Empty;
 }

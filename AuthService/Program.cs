@@ -105,7 +105,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 context.Response.ContentType = "application/json";
 
                 var message = string.IsNullOrEmpty(context.ErrorDescription)
-                    ? "Bạn chưa đăng nhập hoặc token đã hết hạn."
+                    ? "You are not authenticated, or your token has expired."
                     : context.ErrorDescription;
 
                 var response = new ApiResponse<object>
@@ -129,7 +129,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     StatusCode = 403,
                     Error = "Forbidden",
-                    Message = "Bạn không có quyền truy cập tài nguyên này.",
+                    Message = "You do not have permission to access this resource.",
                     Data = null
                 };
 

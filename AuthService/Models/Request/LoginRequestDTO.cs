@@ -4,9 +4,9 @@ namespace AuthService.Models.Request;
 
 public class LoginRequestDTO
 {
-    [Required(ErrorMessage = "Username không được để trống")]
+    [Required(ErrorMessage = "Username is required.")]
     public string Username { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Password không được để trống")]
+    [Required(ErrorMessage = "Password is required.")]
     public string Password { get; set; } = string.Empty;
 }

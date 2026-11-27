@@ -22,7 +22,7 @@ public class TokenService : ITokenService
 
     public string GenerateAccessToken(AppUser user)
     {
-        var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey chưa cấu hình");
+        var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey is not configured.");
         var expireSeconds = int.Parse(_configuration["Jwt:AccessTokenExpireSeconds"] ?? "1200");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -54,7 +54,7 @@ public class TokenService : ITokenService
 
     public string GenerateRefreshToken(AppUser user)
     {
-        var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey chưa cấu hình");
+        var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey is not configured.");
         var expireSeconds = int.Parse(_configuration["Jwt:RefreshTokenExpireSeconds"] ?? "604800");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -84,7 +84,7 @@ public class TokenService : ITokenService
     {
         try
         {
-            var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey chưa cấu hình");
+            var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Jwt:SecretKey is not configured.");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             var validationParams = new TokenValidationParameters

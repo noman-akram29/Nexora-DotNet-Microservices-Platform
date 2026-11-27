@@ -23,7 +23,7 @@ public class CustomersController : ControllerBase
     // GET: /api/customers?searchTerm=Nguyen&status=0&pageNumber=1&pageSize=10
     [HttpGet]
     [RequiresPermission("GET", "/api/v1/customers")]
-    [ApiMessage("Lấy danh sách khách hàng thành công")]
+    [ApiMessage("Customers retrieved successfully.")]
     public async Task<ActionResult<ResultPaginationDto<CustomerResponse>>> GetAllCustomers(
         [FromQuery] CustomerFilterRequest filter)
     {
@@ -34,7 +34,7 @@ public class CustomersController : ControllerBase
     // GET: /api/customers/{id}
     [HttpGet("{id}")]
     [RequiresPermission("GET", "/api/v1/customers/{id}")]
-    [ApiMessage("Lấy thông tin khách hàng thành công")]
+    [ApiMessage("Customer retrieved successfully.")]
     public async Task<ActionResult<CustomerResponse>> GetCustomerById(Guid id)
     {
         var customer = await _customerService.GetCustomerByIdAsync(id);
@@ -44,7 +44,7 @@ public class CustomersController : ControllerBase
     // POST: /api/customers
     [HttpPost]
     [RequiresPermission("POST", "/api/v1/customers")]
-    [ApiMessage("Tạo khách hàng mới thành công")]
+    [ApiMessage("Customer created successfully.")]
     public async Task<ActionResult<CustomerResponse>> CreateCustomer(
         [FromBody] CreateCustomerRequest request)
     {
@@ -55,7 +55,7 @@ public class CustomersController : ControllerBase
     // PUT: /api/customers/{id}
     [HttpPut("{id}")]
     [RequiresPermission("PUT", "/api/v1/customers/{id}")]
-    [ApiMessage("Cập nhật thông tin khách hàng thành công")]
+    [ApiMessage("Customer information updated successfully.")]
     public async Task<ActionResult<CustomerResponse>> UpdateCustomer(
         Guid id, [FromBody] UpdateCustomerRequest request)
     {
@@ -66,7 +66,7 @@ public class CustomersController : ControllerBase
     // DELETE: /api/customers/{id}  (Soft delete)
     [HttpDelete("{id}")]
     [RequiresPermission("DELETE", "/api/v1/customers/{id}")]
-    [ApiMessage("Xóa khách hàng thành công")]
+    [ApiMessage("Customer deleted successfully.")]
     public async Task<IActionResult> DeleteCustomer(Guid id)
     {
         await _customerService.DeleteCustomerAsync(id);
@@ -76,7 +76,7 @@ public class CustomersController : ControllerBase
     // PATCH: /api/customers/{id}/status
     [HttpPatch("{id}/status")]
     [RequiresPermission("PATCH", "/api/v1/customers/{id}/status")]
-    [ApiMessage("Cập nhật trạng thái khách hàng thành công")]
+    [ApiMessage("Customer status updated successfully.")]
     public async Task<IActionResult> ToggleBlockCustomer(
         Guid id, [FromBody] CustomerStatus newStatus)
     {

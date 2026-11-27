@@ -22,7 +22,7 @@ public class RolePageController : ControllerBase
     }
 
     [HttpGet]
-    [ApiMessage("Lấy trang quản lý chức vụ thành công")]
+    [ApiMessage("Role management page retrieved successfully.")]
     public async Task<ActionResult<ApiResponse<object>>> GetRolePage([FromQuery] RolePageRequest request)
     {
         var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");

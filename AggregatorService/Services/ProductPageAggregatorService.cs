@@ -61,13 +61,13 @@ public class ProductPageAggregatorService : IProductPageAggregatorService
             if (!productResponse.IsSuccessStatusCode)
             {
                 var err = await productResponse.Content.ReadAsStringAsync();
-                return ((int)productResponse.StatusCode, null, err, "Lỗi khi tải danh sách sản phẩm");
+                return ((int)productResponse.StatusCode, null, err, "Failed to retrieve the product list.");
             }
 
             if (!categoryResponse.IsSuccessStatusCode)
             {
                 var err = await categoryResponse.Content.ReadAsStringAsync();
-                return ((int)categoryResponse.StatusCode, null, err, "Lỗi khi tải danh sách danh mục");
+                return ((int)categoryResponse.StatusCode, null, err, "Failed to retrieve the category list.");
             }
 
             var productJson = await productResponse.Content.ReadAsStringAsync();
@@ -99,12 +99,12 @@ public class ProductPageAggregatorService : IProductPageAggregatorService
                 categories = categoryList
             };
 
-            return (200, result, null, "Tải dữ liệu trang sản phẩm thành công");
+            return (200, result, null, "Product page data retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi khi aggregate Products Page");
-            return (500, null, ex.Message, "Lỗi hệ thống khi tải dữ liệu");
+            _logger.LogError(ex, "Failed to aggregate product page data.");
+            return (500, null, ex.Message, "A system error occurred while retrieving data.");
         }
     }
 }

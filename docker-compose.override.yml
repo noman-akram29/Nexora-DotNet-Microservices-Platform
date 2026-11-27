@@ -1,0 +1,135 @@
+x-migration-common: &migration-common
+  image: nexora/migrations:local
+  entrypoint: []
+  build:
+    context: .
+    dockerfile: docker/migrations/Dockerfile
+  restart: "no"
+  depends_on:
+    postgres:
+      condition: service_healthy
+  networks:
+    - microservice_network
+
+x-app-healthcheck: &app-healthcheck
+  test:
+    - CMD
+    - /usr/bin/bash
+    - -c
+    - "exec 3<>/dev/tcp/127.0.0.1/8080"
+  interval: 10s
+  timeout: 3s
+  retries: 5
+  start_period: 30s
+
+services:
+  migrate-auth:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-auth
+      - --connection
+      - "Host=postgres;Port=5432;Database=auth_db;Username=auth_service;Password=${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD in .env}"
+
+  migrate-customer:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-customer
+      - --connection
+      - "Host=postgres;Port=5432;Database=customer_db;Username=customer_service;Password=${CUSTOMER_DB_PASSWORD:?Set CUSTOMER_DB_PASSWORD in .env}"
+
+  migrate-order:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-order
+      - --connection
+      - "Host=postgres;Port=5432;Database=order_db;Username=order_service;Password=${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD in .env}"
+
+  migrate-payment:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-payment
+      - --connection
+      - "Host=postgres;Port=5432;Database=payment_db;Username=payment_service;Password=${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in .env}"
+
+  migrate-product:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-product
+      - --connection
+      - "Host=postgres;Port=5432;Database=product_db;Username=product_service;Password=${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD in .env}"
+
+  migrate-report:
+    <<: *migration-common
+    command:
+      - /app/nexora-migrate-report
+      - --connection
+      - "Host=postgres;Port=5432;Database=report_db;Username=report_service;Password=${REPORT_DB_PASSWORD:?Set REPORT_DB_PASSWORD in .env}"
+
+  authservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-auth:
+        condition: service_completed_successfully
+
+  customerservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-customer:
+        condition: service_completed_successfully
+
+  orderservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-order:
+        condition: service_completed_successfully
+
+  paymentservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-payment:
+        condition: service_completed_successfully
+
+  productservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-product:
+        condition: service_completed_successfully
+
+  reportservice:
+    healthcheck: *app-healthcheck
+    depends_on:
+      migrate-report:
+        condition: service_completed_successfully
+
+  notificationservice:
+    healthcheck: *app-healthcheck
+
+  aggregators:
+    healthcheck: *app-healthcheck
+    depends_on:
+      authservice:
+        condition: service_healthy
+      customerservice:
+        condition: service_healthy
+      productservice:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  apigateway:
+    healthcheck: *app-healthcheck
+    depends_on:
+      aggregators:
+        condition: service_healthy
+      authservice:
+        condition: service_healthy
+      customerservice:
+        condition: service_healthy
+      orderservice:
+        condition: service_healthy
+      paymentservice:
+        condition: service_healthy
+      productservice:
+        condition: service_healthy
+      reportservice:
+        condition: service_healthy

@@ -1,97 +1,361 @@
-version: "3.4"
+name: nexora
 
-# =============================================
-# NETWORK: Tất cả services dùng chung network
-# này để giao tiếp với nhau qua tên service
-# (ví dụ: Host=postgres, amqp://rabbitmq)
-# =============================================
 networks:
   microservice_network:
     driver: bridge
 
+volumes:
+  postgres_data_folder_shop:
+  redis_data:
+  minio_data:
+
 services:
-
-  # -----------------------------------------------
-  # INFRASTRUCTURE: RabbitMQ (Message Broker)
-  # -----------------------------------------------
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq_folder_shop
-    ports:
-      - "5600:5672"   # AMQP - gửi/nhận message
-      - "15673:15672" # Web UI - http://localhost:15673
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
-    networks:
-      - microservice_network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # -----------------------------------------------
-  # INFRASTRUCTURE: PostgreSQL (Database)
-  # -----------------------------------------------
   postgres:
     image: postgres:15
-    container_name: postgres_folder_shop
+    container_name: nexora-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: postgres
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD in .env}
+      CUSTOMER_DB_PASSWORD: ${CUSTOMER_DB_PASSWORD:?Set CUSTOMER_DB_PASSWORD in .env}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD in .env}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in .env}
+      PRODUCT_DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD in .env}
+      REPORT_DB_PASSWORD: ${REPORT_DB_PASSWORD:?Set REPORT_DB_PASSWORD in .env}
     ports:
-      - "5555:5432" # expose ra ngoài để dùng DBeaver/pgAdmin
+      - "127.0.0.1:5555:5432"
     volumes:
       - postgres_data_folder_shop:/var/lib/postgresql/data
+      - ./docker/postgres/init/01-create-databases.sh:/docker-entrypoint-initdb.d/01-create-databases.sh:ro
     networks:
       - microservice_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  # -----------------------------------------------
-  # INFRASTRUCTURE: Redis (Distributed Cache)
-  # -----------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: nexora-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?Set RABBITMQ_DEFAULT_USER in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS in .env}
+    ports:
+      - "127.0.0.1:5600:5672"
+      - "127.0.0.1:15673:15672"
+    networks:
+      - microservice_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:7-alpine
-    container_name: redis_folder_shop
+    container_name: nexora-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
       - microservice_network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping 2>/dev/null | grep -q PONG"]
       interval: 10s
       timeout: 5s
-      retries: 5
-
-  # -----------------------------------------------
-  # INFRASTRUCTURE: MinIO (Object Storage — ảnh, file)
-  # Web Console: http://localhost:9001 (admin/minioadmin)
-  # -----------------------------------------------
-  minio:
-    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
-    container_name: minio_folder_shop
+      retries: 10
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+
+  minio:
+    image: docker.io/pgsty/silo:RELEASE.2026-11-12T00-00-00Z
+    container_name: nexora-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     ports:
-      - "9000:9000"   # S3 API — backend kết nối vào đây
-      - "9001:9001"   # Web Console UI
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
     networks:
       - microservice_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
+      test: ["CMD", "silo", "healthcheck", "live"]
+      interval: 15s
       timeout: 10s
-      retries: 3
+      retries: 10
+  mailpit:
+    image: axllent/mailpit:v1.34.0
+    container_name: nexora-mailpit
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks:
+      - microservice_network
 
-volumes:
-  postgres_data_folder_shop:
-  minio_data:
+  authservice:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    image: nexora/authservice:local
+    container_name: nexora-authservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__AuthDb: "Host=postgres;Port=5432;Database=auth_db;Username=auth_service;Password=${AUTH_DB_PASSWORD}"
+      ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      Jwt__RefreshSecretKey: ${JWT_REFRESH_SECRET_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  customerservice:
+    build:
+      context: .
+      dockerfile: CustomerService/Dockerfile
+    image: nexora/customerservice:local
+    container_name: nexora-customerservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=customer_db;Username=customer_service;Password=${CUSTOMER_DB_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      MinioSettings__Endpoint: minio:9000
+      MinioSettings__AccessKey: ${MINIO_ROOT_USER}
+      MinioSettings__SecretKey: ${MINIO_ROOT_PASSWORD}
+      MinioSettings__BucketName: ${MINIO_BUCKET_NAME}
+      MinioSettings__UseSSL: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  orderservice:
+    build:
+      context: .
+      dockerfile: OrderService/Dockerfile
+    image: nexora/orderservice:local
+    container_name: nexora-orderservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=order_db;Username=order_service;Password=${ORDER_DB_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  paymentservice:
+    build:
+      context: .
+      dockerfile: PaymentService/Dockerfile
+    image: nexora/paymentservice:local
+    container_name: nexora-paymentservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=payment_db;Username=payment_service;Password=${PAYMENT_DB_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  productservice:
+    build:
+      context: .
+      dockerfile: ProductService/Dockerfile
+    image: nexora/productservice:local
+    container_name: nexora-productservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=product_db;Username=product_service;Password=${PRODUCT_DB_PASSWORD}"
+      ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+      MinioSettings__Endpoint: minio:9000
+      MinioSettings__AccessKey: ${MINIO_ROOT_USER}
+      MinioSettings__SecretKey: ${MINIO_ROOT_PASSWORD}
+      MinioSettings__BucketName: ${MINIO_BUCKET_NAME}
+      MinioSettings__UseSSL: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  reportservice:
+    build:
+      context: .
+      dockerfile: ReportService/Dockerfile
+    image: nexora/reportservice:local
+    container_name: nexora-reportservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=report_db;Username=report_service;Password=${REPORT_DB_PASSWORD}"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  notificationservice:
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+    image: nexora/notificationservice:local
+    container_name: nexora-notificationservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Security: ${SMTP_SECURITY:-None}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromEmail: ${SMTP_FROM_EMAIL:-}
+      Smtp__FromName: ${SMTP_FROM_NAME:-Nexora Support}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    networks:
+      - microservice_network
+
+  aggregators:
+    build:
+      context: .
+      dockerfile: AggregatorService/Dockerfile
+    image: nexora/aggregatorservice:local
+    container_name: nexora-aggregatorservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD}"
+      JwtSetting__securityKey: ${JWT_SECRET_KEY}
+      Services__Auth: http://authservice:8080
+      Services__Customer: http://customerservice:8080
+      Services__Product: http://productservice:8080
+    depends_on:
+      authservice:
+        condition: service_started
+      customerservice:
+        condition: service_started
+      productservice:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - microservice_network
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    image: nexora/apigateway:local
+    container_name: nexora-apigateway
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Services__Auth: http://authservice:8080
+      Services__Customer: http://customerservice:8080
+    ports:
+      - "127.0.0.1:5000:8080"
+    depends_on:
+      aggregators:
+        condition: service_started
+      authservice:
+        condition: service_started
+      orderservice:
+        condition: service_started
+      customerservice:
+        condition: service_started
+      productservice:
+        condition: service_started
+      paymentservice:
+        condition: service_started
+      reportservice:
+        condition: service_started
+    networks:
+      - microservice_network

@@ -1,0 +1,17 @@
+﻿.git
+.gitignore
+.vs
+**/.vs/
+**/bin/
+**/obj/
+**/TestResults/
+**/*.user
+**/*.suo
+**/*.log
+**/.DS_Store
+**/node_modules/
+.env
+.env.*
+**/.env
+**/.env.*
+**/appsettings.Development.json
